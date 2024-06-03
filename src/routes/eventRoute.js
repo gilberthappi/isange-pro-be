@@ -12,8 +12,8 @@ const eventRouter = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Event
- *   description: The Event managing API
+ *   name: Case
+ *   description: The Case managing API
  */
 
 /**
@@ -25,7 +25,7 @@ const eventRouter = express.Router();
  *       scheme: bearer
  *       bearerFormat: JWT
  *   schemas:
- *     Event:
+ *     Case:
  *       type: object
  *       required:
  *         - eventTitle
