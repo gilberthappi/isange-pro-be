@@ -47,8 +47,8 @@
   "engines": {
     "node": ">=14.20.1"
   },
-  "name": "klab-lawyer",
-  "description": "***klab-lawyer***",
+  "name": "isange-pro",
+  "description": "***isange-pro***",
   "version": "1.0.0",
   "main": "server.js",
   "keywords": [],
