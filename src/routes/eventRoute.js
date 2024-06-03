@@ -25,7 +25,7 @@ const eventRouter = express.Router();
  *       scheme: bearer
  *       bearerFormat: JWT
  *   schemas:
- *     Case:
+ *     Event:
  *       type: object
  *       required:
  *         - eventTitle
@@ -62,7 +62,7 @@ const eventRouter = express.Router();
  * /event/create:
  *   post:
  *     summary: Create a new event
- *     tags: [Event]
+ *     tags: [Case]
  *     description: Register a new Event
  *     security:
  *       - bearerAuth: []
@@ -107,7 +107,7 @@ const eventRouter = express.Router();
  * /event/getAllEvent:
  *   get:
  *     summary: Get all event
- *     tags: [Event]
+ *     tags: [Case]
  *     security:
  *       - bearerAuth: []
  *     description: Retrieve all event
@@ -122,7 +122,7 @@ const eventRouter = express.Router();
  * /event/getEventById/{id}:
  *   get:
  *     summary: Get a event by ID
- *     tags: [Event]
+ *     tags: [Case]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -144,7 +144,7 @@ const eventRouter = express.Router();
  * /event/adminUpdateEvent/{id}:
  *   put:
  *     summary: An admin may update a event by ID to assign it to the lawyer
- *     tags: [Event]
+ *     tags: [Case]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -183,7 +183,7 @@ const eventRouter = express.Router();
  * /event/deleteEvent/{id}:
  *   delete:
  *     summary: Delete a event by ID
- *     tags: [Event]
+ *     tags: [Case]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -206,7 +206,7 @@ const eventRouter = express.Router();
  * /event/getEventCounts:
  *   get:
  *     summary: Get counts of different event categories
- *     tags: [Event]
+ *     tags: [Case]
  *     security:
  *       - bearerAuth: []
  *     description: Count Events  by a specified period (e.g., "year" ).
