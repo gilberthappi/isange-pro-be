@@ -1,16 +1,17 @@
 import mongoose from "mongoose";
-const eventSchema = mongoose.Schema({
+const caseSchema = mongoose.Schema({
 
 
-    eventTitle: String,
-    typeOfEvent: String,
-    dateOfEvent: String,
-    mainGuest: String,
+    caseTitle: String,
+    typeOfCase: String,
+    category: String,
+    status: String,
+    riskLevel: String,
+    dateOfCase: String,
     location: String,
     photo: [String],
     documents:[String],
     createdBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-    hostedBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
       description: {
         type: String,
         maxlength: 2000,
@@ -23,6 +24,6 @@ const eventSchema = mongoose.Schema({
         default: Date.now,
       },
 });
-export const Event =mongoose.model("Event", eventSchema);
+export const Case =mongoose.model("Case", caseSchema);
 
 

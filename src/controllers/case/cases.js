@@ -1,5 +1,5 @@
 import multer from "multer";
-import { Event, USER } from "../../models";
+import { Case, USER } from "../../models";
 import { uploaded } from "../../middleware/photoStorage";
 import { sendEmail } from "../../utils";
 
@@ -14,7 +14,7 @@ cloudinary.config({
   api_secret: process.env.APISECRET,
 });
 
-export const createEvent = async (req, res) => {
+export const createCase = async (req, res) => {
   try {
     uploaded(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
@@ -26,57 +26,40 @@ export const createEvent = async (req, res) => {
       const userId = req.userId;
       const user = await USER.findById(userId);
       const User = await USER.find();
-  
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
       
       req.body.createdBy = userId;
 
-      // Update EVENT with the subscription details
-      let EVENT = req.body;
+      // Update Case with the subscription details
+      let CASE = req.body;
             // Check for file upload
             
              if(req.files && req.files['documents'] && req.files['documents'][0] || req.files && req.files['photo'] && req.files['photo'][0]) {
                if(req.files && req.files['documents'] && req.files['documents'][0] && req.files && req.files['photo'] && req.files['photo'][0]) {
                 const result = await cloudinary.uploader.upload(req.files['documents'][0].path);
-                EVENT.documents = result.secure_url;
+                CASE.documents = result.secure_url;
                 const result2 = await cloudinary.uploader.upload(req.files['photo'][0].path);
-                EVENT.photo = result2.secure_url;
+                CASE.photo = result2.secure_url;
                 }
                else if(req.files && req.files['photo'] && req.files['photo'][0]) {
                   const result = await cloudinary.uploader.upload(req.files['photo'][0].path);
-                  EVENT.photo = result.secure_url;
+                  CASE.photo = result.secure_url;
                   }
                 else if(req.files && req.files['documents'] && req.files['documents'][0]) {
                   const result = await cloudinary.uploader.upload(req.files['documents'][0].path);
-                  EVENT.documents = result.secure_url;
+                  CASE.documents = result.secure_url;
                 }
             }
             else {
-                EVENT.documents = null;
-                EVENT.photo = null;
+              CASE.documents = null;
+              CASE.photo = null;
             }
-            
 
-      let newEvent = await Event.create(EVENT);
-      // Send email to all users emails
-        const userEmails = User
-        .filter((User) => User.role === 'user')
-        .map((user) => user.email);
-        for (const userEmail of userEmails) {
-            try {
-                await sendEmail(
-                    userEmail,
-                    `New Upcoming Event ${newEvent.eventTitle}`,
-                    `New upcoming event has been created.`,
-                );
-                console.log(`Email sent to ${userEmail}`);
-            } catch (emailError) {
-                console.error('Error sending email:', emailError);
-            }
-        }
+      let newCase = await Case.create(CASE);
 
+      //send email to all admins
       const adminEmails = User
       .filter((User) => User.role === 'admin')
       .map((admin) => admin.email);
@@ -84,8 +67,8 @@ export const createEvent = async (req, res) => {
         try {
           await sendEmail(
             adminEmail,
-            `New Upcoming Event ${newEvent.eventTitle}`,
-            `New upcoming event has been created.`,
+            `New Case ${newCase.caseTitle}`,
+            `New Case has been created.`,
           );
           console.log(`Email sent to ${adminEmail}`);
         }
@@ -93,12 +76,12 @@ export const createEvent = async (req, res) => {
           console.error('Error sending email:', emailError);
         }
       }
-      res.status(201).json(newEvent);
+      res.status(201).json(newCase);
     }
     );
   }
   catch (error) {
-    console.error("Error creating event:", error);
+    console.error("Error creating case:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -106,30 +89,36 @@ export const createEvent = async (req, res) => {
 
     const { ObjectId } = require('mongoose').Types;
 
-//UPDATE A EVENT
-    export const adminUpdateEvent = async (req, res) => {
+//UPDATE A CASE
+    export const adminUpdateCase = async (req, res) => {
       try {
-        const eventId = req.params.id;
-        const updatedEvent = await Event.findByIdAndUpdate(
-      // update event, like title, description, typeOfEvent, dateOfEvent, photo, documents
-             eventId,
-            {  eventTitle: req.body.eventTitle,
-                eventDescription: req.body.eventDescription,
-                typeOfEvent: req.body.typeOfEvent,
-                dateOfEvent: req.body.dateOfEvent,
+        const caseId = req.params.id;
+        const updatedCase = await Case.findByIdAndUpdate(
+      // update Case, like title, description, typeOfCase, dateOfCase, photo, documents
+             caseId,
+            {  caseTitle: req.body.caseTitle,
+                caseDescription: req.body.CaseDescription,
+                typeOfCase: req.body.typeOfCase,
+                dateOfCase: req.body.dateOfCase,
                 photo: req.body.photo,
                 documents: req.body.documents,
                 duration: req.body.duration,
                 location: req.body.location,
-                mainGuest: req.body.mainGuest,
+                status: req.body.status,
+                category: req.body.category,
+                riskLevel: req.body.riskLevel,
+                createdBy: req.body.createdBy,
+                description: req.body.description,
+                updatedAt: Date.now(),
+
             },
 
             { new: true }   
 
         );
     
-        if (!updatedEvent) {
-          return res.status(404).json({ error: 'Event not found' });
+      if (!updatedCase) {
+          return res.status(404).json({ error: 'Case not found' });
         }
         //send email to all users and admins
         const user = await USER.find();
@@ -140,8 +129,8 @@ export const createEvent = async (req, res) => {
             try {
                 await sendEmail(
                 userEmail,
-                `Event ${updatedEvent.eventTitle}`,
-                `Event has been updated.`
+                `Case ${updatedCase.caseTitle}`,
+                `Case has been updated.`
                 );
                 console.log(`Email sent to ${userEmail}`);
             } catch (emailError) {
@@ -149,25 +138,25 @@ export const createEvent = async (req, res) => {
             }
             }
 
-        return res.status(200).json(updatedEvent);
+        return res.status(200).json(updatedCase);
       } catch (error) {
-        console.error('Error updating Event:', error);
+        console.error('Error updating Case:', error);
         res.status(500).json({ error: 'Internal server error' });
       }
     };
 
-//DELETET A EVENT
-export const deleteEventById = async (req, res) => {
-const eventId = req.params.id; // Assuming the ID is passed as a URL parameter
+//DELETET A CASE
+export const deleteCaseById = async (req, res) => {
+const caseId = req.params.id; // Assuming the ID is passed as a URL parameter
 
 try {
-  const deleteEvent = await Event.findByIdAndDelete(eventId);
+  const deleteCase = await Case.findByIdAndDelete(caseId);
 
-  if (!deleteEvent) {
-    return res.status(404).json({ error: "Event not found" });
+  if (!deleteCase) {
+    return res.status(404).json({ error: "Case not found" });
   }
 
-  res.status(200).json({ message: "Event deleted successfully", deleteEvent });
+  res.status(200).json({ message: "Case deleted successfully", deleteCase });
 } catch (error) {
   res.status(500).json({ error: "Internal server error" });
 }
@@ -177,10 +166,10 @@ try {
 
 export const getAll = async (req, res) => {
   try {
-    const event = await Event.find().sort({ createdAt: -1 }); // Sort from latest to oldest
+    const cases = await Case.find().sort({ createdAt: -1 }); // Sort from latest to oldest
     res.status(200).json({
-      message: 'All Event (sorted from latest to oldest)',
-      event,
+      message: 'All Case (sorted from latest to oldest)',
+      cases,
     });
   } catch (error) {
     console.error(error);
@@ -194,22 +183,22 @@ export const getAll = async (req, res) => {
 
 //GET BY ID
 export const getbyId = async (req, res) => {
-  const eventId = req.params.id; // Assuming the ID is passed as a URL parameter
+  const caseId = req.params.id; // Assuming the ID is passed as a URL parameter
 
   try {
-    const EVENT = await Event.findById(eventId);
+    const CASE = await Case.findById(caseId);
 
-    if (!EVENT) {
-      return res.status(404).json({ error: "Event is not found" });
+    if (!CASE) {
+      return res.status(404).json({ error: "Case is not found" });
     }
 
-    res.status(200).json(EVENT);
+    res.status(200).json(CASE);
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
-export const getEventCounts = async (req, res) => {
+export const getCaseCounts = async (req, res) => {
   const { year } = req.query;
 
   try {
@@ -217,7 +206,7 @@ export const getEventCounts = async (req, res) => {
     const endDate = new Date(year, 11, 31);
 
     // Aggregation count within the specified year range
-    const eventCountsByMonth = await Event.aggregate([
+    const caseCountsByMonth = await Case.aggregate([
       {
         $match: {
           createdAt: {
@@ -251,7 +240,7 @@ export const getEventCounts = async (req, res) => {
     ];
 
     const response = months.map((monthName, index) => {
-      const matchingMonth = eventCountsByMonth.find(
+      const matchingMonth = caseCountsByMonth.find(
         (entry) => entry._id === index + 1
       );
       return {
@@ -261,7 +250,7 @@ export const getEventCounts = async (req, res) => {
     });
     res.status(200).json(response);
   } catch (error) {
-    console.error('Error getting Event counts by month:', error);
+    console.error('Error getting Case counts by month:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };

@@ -2,11 +2,11 @@
 import express  from "express";
 import { isAdmin,uploaded,verifyToken} from "../middleware";
 import {
-    createEvent,adminUpdateEvent,deleteEventById,
-    getbyId,getAll,getEventCounts
-} from "../controllers/event";
+    createCase,adminUpdateCase,deleteCaseById,
+    getbyId,getAll,getCaseCounts
+} from "../controllers/case/cases.js";
 
-const eventRouter = express.Router();
+const caseRouter = express.Router();
 
 
 /**
@@ -25,24 +25,24 @@ const eventRouter = express.Router();
  *       scheme: bearer
  *       bearerFormat: JWT
  *   schemas:
- *     Event:
+ *     Case:
  *       type: object
  *       required:
- *         - eventTitle
+ *         - caseTitle
  *       properties:
- *         eventTitle:
+ *         caseTitle:
  *           type: string
- *           description: Title of the event
+ *           description: Title of the case
  *         description:
  *           type: string
- *           description: Details on the event
- *         typeOfEvent:
+ *           description: Details on the case
+ *         typeOfCase:
  *           type: string
- *           enum: ['baptism',  'other']
- *           description: Type of the event
- *         dateOfEvent:
+ *           enum: ['sexual abuse', 'domestic violence', 'child abuse', 'other']
+ *           description: Type of the case
+ *         dateOfCase:
  *           type: string
- *           description: Date of the event
+ *           description: Date of the case
  *         photo:
  *           type: array
  *           items:
@@ -54,16 +54,16 @@ const eventRouter = express.Router();
  *           items:
  *             type: string
  *             format: binary
- *           description: documents for explaining the event
+ *           description: documents for explaining the case
  */
 
 /**
  * @swagger
- * /event/create:
+ * /case/create:
  *   post:
- *     summary: Create a new event
+ *     summary: Create a new case
  *     tags: [Case]
- *     description: Register a new Event
+ *     description: Register a new Case
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -73,14 +73,14 @@ const eventRouter = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               eventTitle:
+ *               caseTitle:
  *                 type: string
  *               description:
  *                 type: string
- *               typeOfEvent:
+ *               typeOfCase:
  *                 type: string
- *                 enum: ['baptism', 'other']
- *               dateOfEvent:
+ *                 enum: ['sexual abuse', 'domestic violence', 'child abuse', 'other']
+ *               dateOfCase:
  *                 type: string
  *               photo:
  *                 type: array
@@ -94,34 +94,34 @@ const eventRouter = express.Router();
  *                   format: binary
  * 
  *             required:
- *               - eventTitle
+ *               - caseTitle
  *     responses:
  *       201:
- *         description: event registered successfully
+ *         description: case registered successfully
  *       400:
  *         description: Bad Request - Invalid data
  */
 
 /**
  * @swagger
- * /event/getAllEvent:
+ * /case/getAllCase:
  *   get:
- *     summary: Get all event
+ *     summary: Get all case
  *     tags: [Case]
  *     security:
  *       - bearerAuth: []
- *     description: Retrieve all event
+ *     description: Retrieve all case
  *     responses:
  *       200:
- *         description: List of events
+ *         description: List of cases
  */
 
 
 /**
  * @swagger
- * /event/getEventById/{id}:
+ * /case/getCaseById/{id}:
  *   get:
- *     summary: Get a event by ID
+ *     summary: Get a case by ID
  *     tags: [Case]
  *     security:
  *       - bearerAuth: []
@@ -131,19 +131,19 @@ const eventRouter = express.Router();
  *         required: true
  *         schema:
  *           type: string
- *         description: The event ID
+ *         description: The case ID
  *     responses:
  *       200:
- *         description: The event details by ID
+ *         description: The case details by ID
  *       404:
- *         description: event not found
+ *         description: case not found
  */
 
 /**
  * @swagger
- * /event/adminUpdateEvent/{id}:
+ * /case/adminUpdateCase/{id}:
  *   put:
- *     summary: An admin may update a event by ID to assign it to the lawyer
+ *     summary: An admin may update a case by ID to assign it to the lawyer
  *     tags: [Case]
  *     security:
  *       - bearerAuth: []
@@ -153,7 +153,7 @@ const eventRouter = express.Router();
  *         required: true
  *         schema:
  *           type: string
- *         description: The event ID
+ *         description: The case ID
  *     requestBody:
  *       required: true
  *       content:
@@ -163,16 +163,16 @@ const eventRouter = express.Router();
  *             properties:
  *               description:
  *                type: string
- *               typeOfEvent:
+ *               typeOfCase:
  *                type: string
- *                enum: ['baptism', 'other']
- *               dateOfEvent:  
+ *                enum: ['sexual abuse', 'domestic violence', 'child abuse', 'other']
+ *               dateOfCase:  
  *                type: string
  *     responses:
  *       200:
- *         description: The event was updated
+ *         description: The case was updated
  *       404:
- *         description: Event not found
+ *         description: case not found
  *       500:
  *         description: Some error occurred
  */
@@ -180,9 +180,9 @@ const eventRouter = express.Router();
 
 /**
  * @swagger
- * /event/deleteEvent/{id}:
+ * /case/deleteCase/{id}:
  *   delete:
- *     summary: Delete a event by ID
+ *     summary: Delete a case by ID
  *     tags: [Case]
  *     security:
  *       - bearerAuth: []
@@ -192,24 +192,24 @@ const eventRouter = express.Router();
  *         required: true
  *         schema:
  *           type: string
- *         description: The event ID
+ *         description: The case ID
  *     responses:
  *       200:
- *         description: Event deleted successfully
+ *         description: case deleted successfully
  *       404:
- *         description: Event not found
+ *         description: Case not found
  */
 
 
 /**
  * @swagger
- * /event/getEventCounts:
+ * /case/getCaseCounts:
  *   get:
- *     summary: Get counts of different event categories
+ *     summary: Get counts of different case categories
  *     tags: [Case]
  *     security:
  *       - bearerAuth: []
- *     description: Count Events  by a specified period (e.g., "year" ).
+ *     description: Count Cases  by a specified period (e.g., "year" ).
  *     parameters:
  *       - in: query
  *         name: year
@@ -224,13 +224,13 @@ const eventRouter = express.Router();
  *         description: Internal Server Error
  */
 
-  eventRouter.get('/getEventCounts',verifyToken, getEventCounts);
-  eventRouter.get("/getAllEvent",getAll);
-  eventRouter.post("/create",verifyToken,isAdmin,createEvent);
-  eventRouter.delete("/deleteEvent/:id",verifyToken,isAdmin,deleteEventById);
-  eventRouter.get("/getEventById/:id", getbyId);
-  eventRouter.put("/adminUpdateEvent/:id",verifyToken,isAdmin,adminUpdateEvent);
+  caseRouter.get('/getCaseCounts',uploaded,verifyToken, getCaseCounts);
+  caseRouter.get("/getAllCase",uploaded,getAll);
+  caseRouter.post("/create",verifyToken,uploaded, createCase);
+  caseRouter.delete("/deleteCase/:id",uploaded,verifyToken,deleteCaseById);
+  caseRouter.get("/getCaseById/:id",uploaded,verifyToken, getbyId);
+  caseRouter.put("/adminUpdateCase/:id",uploaded,verifyToken,adminUpdateCase);
 
 
-export default eventRouter;
+export default caseRouter;
               

@@ -1,13 +1,13 @@
 import express from 'express';
 import userRouter from './authRoute';
 
-import eventRouter from './eventRoute';
+import caseRouter from './caseRoute';
 
 
 const mainRouter = express.Router();
 
 mainRouter.use('/user', userRouter);
-mainRouter.use('/event',eventRouter);
+mainRouter.use('/case',caseRouter);
 
 
 export  default mainRouter;
