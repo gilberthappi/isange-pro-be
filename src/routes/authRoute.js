@@ -160,9 +160,6 @@ const userRouter = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               userType:
- *                type: string
- *                enum: ['individual', 'organization']
  *               name:
  *                 type: string
  *               email:
@@ -376,6 +373,6 @@ userRouter.post('/resetPassword',uploaded, resetPassword);
  *                 type: string
  */
 
-userRouter.get('/all',   verifyToken,isAdmin,getAllClients);
+userRouter.get('/all', getAllClients);
 
 export default userRouter;

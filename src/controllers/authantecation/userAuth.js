@@ -69,9 +69,9 @@ export const signup = async (req, res) => {
   
     // Send a welcome email to the user
     const mailOptions = {
-      from: 'robertwilly668@gmail.com',
+      from: 'isangeteam@gmail.com',
       to: newUser.email,
-      subject: 'Welcome to AJEMEL SITE',
+      subject: 'Welcome to ISANGE PRO SITE',
       text: 'Thank you for signing up!',
     };
 
