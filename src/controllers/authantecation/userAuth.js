@@ -18,7 +18,7 @@ cloudinary.config({
 // Signup for both individual and organization clients
 export const signup = async (req, res) => {
   try {
-    const { email, password, confirmPassword, userType } = req.body;
+    const { email, password, confirmPassword,name, phone,registrationNumber, contactPerson } = req.body;
 
     // Check if the email already exists
     const existingUser = await USER.findOne({ email });
@@ -38,65 +38,23 @@ export const signup = async (req, res) => {
 
     // Hash the password
     const hashedPassword = await hashPassword(password);
-
-    // Create a new user based on userType
-    let newUser;
-    if (userType === 'individual') {
-      const { name, phone,userType} = req.body;
-      newUser = await USER.create({
-        userType,
-        email,
-        password: hashedPassword, 
-        name,
-        phone,
-        
-      });
-    } else if (userType === 'organization') {
-      // You might want to adjust these fields based on your organization requirements
-      const { name, registrationNumber, phone, contactPerson, userType } = req.body;
-      newUser = await USER.create({
-        userType,
-        email,
-        password: hashedPassword,
-        name,
-        registrationNumber,
-        phone,
-        contactPerson,
-        role: 'organization',
-        
-      });
-    } 
-  
-    // Send a welcome email to the user
-    const mailOptions = {
-      from: 'robertwilly668@gmail.com',
-      to: newUser.email,
-      subject: 'Welcome to AJEMEL SITE',
-      text: 'Thank you for signing up!',
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Email sending failed:', error);
-      } else {
-        console.log('Email sent:', info.response);
-      }
+    //create user and send email
+    const newUser = new USER({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      registrationNumber,
+      contactPerson,
     });
-
-    const token = generateToken({
-      id: newUser.id,
-    });
-
-    res.status(201).json({
-      message: 'User registered successfully',
-      access_token: token,
-      USER: {
-        email: newUser.email,
-        name: newUser.name,
-        role: newUser.role,
-        // Add other relevant fields based on userType
-      },
-    });
+    await newUser.save();
+    // Send email to user
+    await sendEmail(
+      email,
+      'Account Verification',
+      'Welcome to our platform!',
+      'Your account has been created successfully'
+    );
   
   } catch (error) {
     console.log('error', error);

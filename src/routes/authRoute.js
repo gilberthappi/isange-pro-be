@@ -160,9 +160,6 @@ const userRouter = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               userType:
- *                type: string
- *                enum: ['individual', 'organization']
  *               name:
  *                 type: string
  *               email:
@@ -171,14 +168,12 @@ const userRouter = express.Router();
  *                 type: string
  *               confirmPassword:
  *                 type: string
- *               phone:
- *                 type: string
  *               
  *             required:
  *               - email
  *               - password
  *               - confirmPassword
- *               - userType
+ *               
  *     responses:
  *       201:
  *         description: User registered successfully
