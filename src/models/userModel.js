@@ -98,6 +98,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['individual', 'organization', 'admin'],
         required: false,
+        default: 'individual',
       },
     
       // Additional Fields for Organization Clients
