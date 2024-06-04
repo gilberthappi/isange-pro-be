@@ -18,61 +18,34 @@ cloudinary.config({
 // Signup for both individual and organization clients
 export const signup = async (req, res) => {
   try {
-    const { email, password, confirmPassword, userType } = req.body;
+    const User = await USER.findOne({ email: req.body.email });
 
-    // Check if the email already exists
-    const existingUser = await USER.findOne({ email });
-
-    if (existingUser) {
+    if (User) {
       return res.status(409).json({
         message: 'User with this email already exists',
       });
     }
 
-    // Check if password and confirm password match
-    if (password !== confirmPassword) {
-      return res.status(409).json({
-        message: 'Password and Confirm Password do not match',
-      });
+    const hashedPassword = await hashPassword(req.body.password);
+
+    req.body.password = hashedPassword;
+
+    const newUser = await USER.create(req.body);
+    if (!newUser) {
+      res.status(404).json({ message: 'Failed to register' });
     }
 
-    // Hash the password
-    const hashedPassword = await hashPassword(password);
-
-    // Create a new user based on userType
-    let newUser;
-    if (userType === 'individual') {
-      const { name, phone,userType} = req.body;
-      newUser = await USER.create({
-        userType,
-        email,
-        password: hashedPassword, 
-        name,
-        phone,
-        
-      });
-    } else if (userType === 'organization') {
-      // You might want to adjust these fields based on your organization requirements
-      const { name, registrationNumber, phone, contactPerson, userType } = req.body;
-      newUser = await USER.create({
-        userType,
-        email,
-        password: hashedPassword,
-        name,
-        registrationNumber,
-        phone,
-        contactPerson,
-        role: 'organization',
-        
-      });
-    } 
-  
     // Send a welcome email to the user
     const mailOptions = {
-      from: 'isangeteam@gmail.com',
+      from: 'isangepro@gmail.com',
       to: newUser.email,
-      subject: 'Welcome to ISANGE PRO SITE',
-      text: 'Thank you for signing up!',
+      subject: 'Welcome to ISANGE PRO',
+      html: `<h1>Welcome to ISANGE PRO</h1>
+      <p>Thank you for signing up with us. We are excited to have you on board. </p>
+      <p>Feel free to explore our platform and reach out to us in case of any questions or concerns.</p>
+      <p>Best Regards,</p>
+      <p>ISANGE PRO Team</p>`,
+
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -85,6 +58,13 @@ export const signup = async (req, res) => {
 
     const token = generateToken({
       id: newUser.id,
+      role:newUser.role,
+      name:newUser.name,
+      phone:newUser.phone,
+      location:newUser.location,
+      
+
+
     });
 
     res.status(201).json({
@@ -92,17 +72,14 @@ export const signup = async (req, res) => {
       access_token: token,
       USER: {
         email: newUser.email,
+        location: newUser.location,
         name: newUser.name,
+        phone: newUser.phone,
         role: newUser.role,
-        // Add other relevant fields based on userType
       },
     });
-  
   } catch (error) {
-    console.log('error', error);
-    res.status(500).json({
-      message: 'Internal server error',
-    });
+    console.log(error);
   }
 };
 //##################################################################################

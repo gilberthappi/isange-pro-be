@@ -37,6 +37,12 @@ const userSchema = new mongoose.Schema({
         min: 6,
         max: 255
     },
+    location: {
+        type: String,
+        required: false,
+        min: 3,
+        max: 255
+    },
     photo: {
         type: String,
         required: false,
