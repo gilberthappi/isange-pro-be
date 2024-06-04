@@ -16,7 +16,7 @@ const userRouter = express.Router();
  * @swagger
  * tags:
  *   name: Authentications
- *   description: AJEMEL API
+ *   description: ISANGE PRO API
  */
 
 /**
