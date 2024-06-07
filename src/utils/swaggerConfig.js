@@ -9,12 +9,11 @@ export const swaggerOptions = {
       },
       servers: [
         {
-          url: 'https://isange-pro-be.onrender.com/api/v1',
-        },
-        {
           url: 'http://localhost:2000/api/v1',
         },
-
+        {
+          url: 'https://isange-pro-be.onrender.com/api/v1',
+        },
 
         
       ],

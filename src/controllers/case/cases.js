@@ -16,12 +16,12 @@ cloudinary.config({
 
 export const createCase = async (req, res) => {
   try {
-    uploaded(req, res, async function (err) {
-      if (err instanceof multer.MulterError) {
-        return res.status(400).json({ error: "File upload error" });
-      } else if (err) {
-        return res.status(500).json({ error: "Internal server error" });
-      }
+    // uploaded(req, res, async function (err) {
+    //   // if (err instanceof multer.MulterError) {
+    //   //   return res.status(400).json({ error: "File upload error" });
+    //   // } else if (err) {
+    //   //   return res.status(500).json({ error: "Internal serttver error" });
+    //   // }
 
       const userId = req.userId;
       const user = await USER.findById(userId);
@@ -34,28 +34,30 @@ export const createCase = async (req, res) => {
 
       // Update Case with the subscription details
       let CASE = req.body;
+
+      console.log('send data:',CASE)
             // Check for file upload
             
-             if(req.files && req.files['documents'] && req.files['documents'][0] || req.files && req.files['photo'] && req.files['photo'][0]) {
-               if(req.files && req.files['documents'] && req.files['documents'][0] && req.files && req.files['photo'] && req.files['photo'][0]) {
-                const result = await cloudinary.uploader.upload(req.files['documents'][0].path);
-                CASE.documents = result.secure_url;
-                const result2 = await cloudinary.uploader.upload(req.files['photo'][0].path);
-                CASE.photo = result2.secure_url;
-                }
-               else if(req.files && req.files['photo'] && req.files['photo'][0]) {
-                  const result = await cloudinary.uploader.upload(req.files['photo'][0].path);
-                  CASE.photo = result.secure_url;
-                  }
-                else if(req.files && req.files['documents'] && req.files['documents'][0]) {
-                  const result = await cloudinary.uploader.upload(req.files['documents'][0].path);
-                  CASE.documents = result.secure_url;
-                }
-            }
-            else {
-              CASE.documents = null;
-              CASE.photo = null;
-            }
+            //  if(req.files && req.files['documents'] && req.files['documents'][0] || req.files && req.files['photo'] && req.files['photo'][0]) {
+            //    if(req.files && req.files['documents'] && req.files['documents'][0] && req.files && req.files['photo'] && req.files['photo'][0]) {
+            //     const result = await cloudinary.uploader.upload(req.files['documents'][0].path);
+            //     CASE.documents = result.secure_url;
+            //     const result2 = await cloudinary.uploader.upload(req.files['photo'][0].path);
+            //     CASE.photo = result2.secure_url;
+            //     }
+            //    else if(req.files && req.files['photo'] && req.files['photo'][0]) {
+            //       const result = await cloudinary.uploader.upload(req.files['photo'][0].path);
+            //       CASE.photo = result.secure_url;
+            //       }
+            //     else if(req.files && req.files['documents'] && req.files['documents'][0]) {
+            //       const result = await cloudinary.uploader.upload(req.files['documents'][0].path);
+            //       CASE.documents = result.secure_url;
+            //     }
+            // }
+            // else {
+            //   CASE.documents = null;
+            //   CASE.photo = null;
+            // }
 
       let newCase = await Case.create(CASE);
 
@@ -78,8 +80,8 @@ export const createCase = async (req, res) => {
       }
       res.status(201).json(newCase);
     }
-    );
-  }
+    // );
+  // }
   catch (error) {
     console.error("Error creating case:", error);
     res.status(500).json({ error: "Internal server error" });
