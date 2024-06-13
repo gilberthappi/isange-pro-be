@@ -161,27 +161,47 @@ export const updateCase = async (req, res) => {
   try {
     const caseId = req.params.id;
     const updatedData = req.body;
-    const user = await USER.find();
-    const adminEmails = user.filter((user) => user.role === 'admin').map((admin) => admin.email);
+    const userId = req.userId;
+
+    const user = await USER.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
     const foundCase = await Case.findById(caseId);
-
     if (!foundCase) {
       return res.status(404).json({ error: "Case not found" });
     }
 
-    foundCase.caseTitle = updatedData.caseTitle;
-    foundCase.description = updatedData.description;
-    foundCase.typeOfCase = updatedData.typeOfCase;
-    foundCase.dateOfIncident = updatedData.dateOfIncident;
-    foundCase.photo = updatedData.photo;
-    foundCase.documents = updatedData.documents;
+    // Update only the fields present in updatedData
+    const updatedCase = await Case.findByIdAndUpdate(caseId, { $set: updatedData }, { new: true });
 
-    const updatedCase = await foundCase.save();
+    const allUsers = await USER.find();
+    const adminEmails = allUsers.filter((user) => user.role === 'admin').map((admin) => admin.email);
 
     for (const adminEmail of adminEmails) {
       try {
-        await sendEmail(adminEmail, `Case ${updatedCase.caseTitle}`, `Lawyer ${updatedCase.assignedTo} has updated the case.`);
+        const emailSubject = `Case Updated: ${updatedCase.caseTitle}`;
+        const emailTextContent = `A case titled "${updatedCase.caseTitle}" has been updated. Please log in to review the details.`;
+        const emailHtmlContent = `
+        <div style="font-family: Arial, sans-serif; color: black;">
+          <p><strong>Dear Admin,</strong></p>
+          <p>We are pleased to inform you that a case has been updated in the system. Below are the details of the case:</p>
+          <ul>
+            <li><strong>Case Title:</strong> ${updatedCase.caseTitle}</li>
+            <li><strong>Description:</strong> ${updatedCase.description}</li>
+            <li><strong>Type of Case:</strong> ${updatedCase.typeOfCase}</li>
+            <li><strong>Date of Incident:</strong> ${updatedCase.dateOfIncident || 'Not provided'}</li>
+            <li><strong>Created By:</strong> ${user.name}</li>
+          </ul>
+          <p>Please log in to the system to review the case and take any necessary actions.</p>
+          <p>Thank you for your attention to this matter.</p>
+          <p>Best regards,</p>
+          <p>Isange pro</p>
+        </div>
+        `;
+
+        await sendEmail(adminEmail, emailSubject, emailTextContent, emailHtmlContent);
         console.log(`Email sent to ${adminEmail}`);
       } catch (emailError) {
         console.error('Error sending email:', emailError);

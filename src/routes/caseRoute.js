@@ -11,8 +11,33 @@ const caseRouter = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Case
- *   description: The Case managing API
+ *   name: User vs case
+ *   description: The User manage case managing API
+ */
+/**
+ * @swagger
+ * tags:
+ *   name: Admin vs case
+ *   description: The Admin manage case managing API
+ */
+/**
+ * @swagger
+ * tags:
+ *   name: RIB vs case
+ *   description: The Admin manage case managing API
+ */
+/**
+ * @swagger
+ * tags:
+ *   name: Hospital vs case
+ *   description: The Hospital manage case managing API
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Global vs case
+ *   description: The Hospital manage case managing API
  */
 
 /**
@@ -61,7 +86,7 @@ const caseRouter = express.Router();
  * /Case/create:
  *   post:
  *     summary: Create a new case
- *     tags: [Case]
+ *     tags: [User vs case]
  *     description: Register a new case
  *     security:
  *       - bearerAuth: []
@@ -106,7 +131,7 @@ const caseRouter = express.Router();
  * /Case/getAllCases:
  *   get:
  *     summary: Get all cases
- *     tags: [Case]
+ *     tags: [Admin vs case]
  *     security:
  *       - bearerAuth: []
  *     description: Retrieve all cases
@@ -120,7 +145,7 @@ const caseRouter = express.Router();
  * /Case/deleteAll:
  *   delete:
  *     summary: Delete all cases
- *     tags: [Case]
+ *     tags: [Admin vs case]
  *     security:
  *       - bearerAuth: []
  *     description: Retrieve all cases
@@ -134,7 +159,7 @@ const caseRouter = express.Router();
  * /Case/getCaseById/{id}:
  *   get:
  *     summary: Get a case by ID
- *     tags: [Case]
+ *     tags: [Global vs case]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -151,96 +176,130 @@ const caseRouter = express.Router();
  *         description: Case not found
  */
 
-// /**
-//  * @swagger
-//  * /Case/userUpdateCase/{id}:
-//  *   put:
-//  *     summary: A user may update a case by ID
-//  *     tags: [Case]
-//  *     security:
-//  *       - bearerAuth: []
-//  *     parameters:
-//  *       - in: path
-//  *         name: id
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The case ID
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         multipart/form-data:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               caseTitle:
-//  *                 type: string
-//  *               description:
-//  *                 type: string
-//  *               typeOfCase:
-//  *                 type: string
-//  *                 enum: ['family', 'criminal', 'educational', 'financial', 'other']
-//  *               dateOfIncident:
-//  *                 type: string
-//  *               photo:
-//  *                 type: array
-//  *                 items:
-//  *                   type: string
-//  *                   format: binary
-//  *               documents:
-//  *                 type: array
-//  *                 items:
-//  *                   type: string
-//  *                   format: binary
-//  * 
-//  *             required:
-//  *               - caseTitle
-//  *     responses:
-//  *       201:
-//  *         description: Case Updated successfully
-//  *       400:
-//  *         description: Bad Request - Invalid data
-//  */
-// /**
-//  * @swagger
-//  * /Case/adminUpdateCase/{id}:
-//  *   put:
-//  *     summary: An admin may update a case by ID to assign it to the lawyer
-//  *     tags: [Case]
-//  *     security:
-//  *       - bearerAuth: []
-//  *     parameters:
-//  *       - in: path
-//  *         name: id
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The case ID
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               lawyerId:
-//  *                 type: string
-//  *                 description: The ID of the lawyer to assign the case to
-//  *     responses:
-//  *       200:
-//  *         description: The case was updated
-//  *       404:
-//  *         description: Case not found
-//  *       500:
-//  *         description: Some error occurred
-//  */
+/**
+ * @swagger
+ * /Case/userUpdateCase/{id}:
+ *   put:
+ *     summary: A user may update a case by ID
+ *     tags: [User vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The case ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               caseTitle:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               typeOfCase:
+ *                 type: string
+ *                 enum: ['family', 'criminal', 'educational', 'financial', 'other']
+ *               dateOfIncident:
+ *                 type: string
+ *               photo:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *               documents:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ * 
+ *             required:
+ *               - caseTitle
+ *     responses:
+ *       201:
+ *         description: Case Updated successfully
+ *       400:
+ *         description: Bad Request - Invalid data
+ */
+/**
+ * @swagger
+ * /Case/adminUpdateCase/{id}:
+ *   put:
+ *     summary: An admin may update a case by ID to assign it to the RIB
+ *     tags: [Admin vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The case ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               RIB_Id:
+ *                 type: string
+ *                 description: The ID of the RIB to assign the case to
+ *     responses:
+ *       200:
+ *         description: The case was updated
+ *       404:
+ *         description: Case not found
+ *       500:
+ *         description: Some error occurred
+ */
+
+/**
+ * @swagger
+ * /Case/adminUpdatesCase/{id}:
+ *   put:
+ *     summary: An admin may update a case by ID to assign it to the Hospital
+ *     tags: [Admin vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The case ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               HospitalId:
+ *                 type: string
+ *                 description: The ID of the Hospital to assign the case to
+ *     responses:
+ *       200:
+ *         description: The case was updated
+ *       404:
+ *         description: Case not found
+ *       500:
+ *         description: Some error occurred
+ */
 
 // /**
 //  * @swagger
 //  * /Case/lawyerAcceptReject/{id}:
 //  *   put:
 //  *     summary: A lawyer may accept or reject a case by ID
-//  *     tags: [Case]
+//  *     tags: [RIB vs case]
 //  *     security:
 //  *       - bearerAuth: []
 //  *     parameters:
@@ -274,7 +333,7 @@ const caseRouter = express.Router();
 //  * /Case/lawyerUpdateCase/{id}:
 //  *   put:
 //  *     summary: A lawyer may update the progress of a case by ID
-//  *     tags: [Case]
+//  *     tags: [RIB vs case]
 //  *     security:
 //  *       - bearerAuth: []
 //  *     parameters:
@@ -304,49 +363,49 @@ const caseRouter = express.Router();
 //  *         description: Internal server error
 //  */
 
-// /**
-//  * @swagger
-//  * /Case/deleteCase/{id}:
-//  *   delete:
-//  *     summary: Delete a case by ID
-//  *     tags: [Case]
-//  *     security:
-//  *       - bearerAuth: []
-//  *     parameters:
-//  *       - in: path
-//  *         name: id
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The case ID
-//  *     responses:
-//  *       200:
-//  *         description: Case deleted successfully
-//  *       404:
-//  *         description: Case not found
-//  */
+/**
+ * @swagger
+ * /Case/deleteCase/{id}:
+ *   delete:
+ *     summary: Delete a case by ID
+ *     tags: [Global vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The case ID
+ *     responses:
+ *       200:
+ *         description: Case deleted successfully
+ *       404:
+ *         description: Case not found
+ */
 
 
-// /**
-//  * @swagger
-//  * /Case/getAllCasesUser:
-//  *   get:
-//  *     summary: Get all cases
-//  *     tags: [Case]
-//  *     security:
-//  *       - bearerAuth: []
-//  *     description: Retrieve all cases
-//  *     responses:
-//  *       200:
-//  *         description: List of cases
-//  */
+/**
+ * @swagger
+ * /Case/getAllCasesUser:
+ *   get:
+ *     summary: Get all cases
+ *     tags: [User vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieve all cases
+ *     responses:
+ *       200:
+ *         description: List of cases
+ */
 
 // /**
 //  * @swagger
 //  * /Case/getCaseCounts:
 //  *   get:
 //  *     summary: Get counts of different case categories
-//  *     tags: [Case]
+//  *     tags: [Admin vs case]
 //  *     security:
 //  *       - bearerAuth: []
 //  *     description: Count cases  by a specified period (e.g., "year" ).
@@ -364,26 +423,9 @@ const caseRouter = express.Router();
 //  *         description: Internal Server Error
 //  */
 
-// /**
-//  * @swagger
-//  * /Case/getAllCasesUser:
-//  *   get:
-//  *     summary: Get all cases
-//  *     tags: [Case]
-//  *     security:
-//  *       - bearerAuth: []
-//  *     description: Retrieve counts of cases that are available, assigned, accepted, and completed.
-//  *     responses:
-//  *       200:
-//  *         description: Success
-//  *       500:
-//  *         description: Internal Server Error
-//  */
-
 
   caseRouter.get('/getCaseCounts', verifyToken, isAdmin, getCaseCounts);
   caseRouter.delete('/deleteAll',verifyToken, isAdmin, deleteAll);
-
   caseRouter.get("/getAllCasesUser",verifyToken,getbyUserId);
   caseRouter.get("/getAllCases",verifyToken,getAll);
   caseRouter.post("/create",verifyToken,createCase);
@@ -391,6 +433,7 @@ const caseRouter = express.Router();
   caseRouter.get("/getCaseById/:id", getbyId);
   caseRouter.put("/userUpdateCase/:id",uploaded,verifyToken,updateCase);
   caseRouter.put("/adminUpdateCase/:id",verifyToken, isAdmin,adminUpdateCase);
+  caseRouter.put("/adminUpdatesCase/:id",verifyToken, isAdmin,adminUpdateCase);
   caseRouter.put("/lawyerAcceptReject/:id",verifyToken,isLawyer,lawyerAcceptRejectCase);
   caseRouter.put("/lawyerUpdateCase/:id",verifyToken,isLawyer,lawyerUpdateCaseProgress);
 
