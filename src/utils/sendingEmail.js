@@ -1,33 +1,31 @@
-import nodemailer from "nodemailer";
-//  import mailgen from "mailgen";
- import dotenv from "dotenv";
- dotenv.config();
- 
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 
-export const sendEmail= async (to,sub,textContent,htlmlContent)=>{
+dotenv.config();
 
-    
-    console.log("to",to)
-    // console.log("sub",sub,textContent,htlmlContent)
-    
-try{let transporter=nodemailer.createTransport({
-    service:"gmail",
-    auth:{
-        user:process.env.EMAIL,
-        pass:process.env.PASS
-    }
-});
-// console.log(process.env.EMAIL,process.env.PASSWORD)
- let mailoptions={
-    from:process.env.EMAIL,
-    to:to,
-    subject:sub,
-    text:textContent,
-    html:htlmlContent
- };
- await transporter.sendMail(mailoptions);
+export const sendEmail = async (to, sub, textContent, htmlContent) => {
+  console.log('to', to);
 
-}catch(error){console.log("send emailcatch block",error)}
+  try {
+    let transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASS
+      }
+    });
 
+    let mailOptions = {
+      from: process.env.EMAIL,
+      to: to,
+      subject: sub,
+      text: textContent,
+      html: htmlContent
+    };
 
-}
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}`);
+  } catch (error) {
+    console.log('sendEmail catch block', error);
+  }
+};

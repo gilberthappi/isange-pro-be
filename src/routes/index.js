@@ -1,6 +1,5 @@
 import express from 'express';
 import userRouter from './authRoute';
-
 import caseRouter from './caseRoute';
 
 

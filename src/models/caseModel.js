@@ -7,7 +7,7 @@ const caseSchema = mongoose.Schema({
     category: String,
     status: String,
     riskLevel: String,
-    dateOfCase: String,
+    dateOfIncident: String,
     location: String,
     photo: [String],
     documents:[String],
