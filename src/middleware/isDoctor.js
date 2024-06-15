@@ -1,12 +1,12 @@
 import { USER } from '../models/userModel.js';
 
-export const isLawyer = async (req, res, next) => {
+export const isDoctor = async (req, res, next) => {
     try {
       const { userId } = req;
   
       const User = await USER.findById(userId);
       console.log(User, 'user');
-      if (User?.role !== 'lawyer') {
+      if (User?.role !== 'doctor') {
         return res(403).json({
           message: 'You are not authorized to perform this action',
         });

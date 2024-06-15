@@ -13,8 +13,9 @@ import {
   getAllDoctors,
   deleteAgent,
   deleteDoctor,
+  changeUserRole,
 } from '../controllers/authantecation/userAuth.js';
-import { verifyToken, uploaded, isAdmin } from '../middleware/index.js';
+import { verifyToken, uploaded, isAdmin, isHospital, isRIB } from '../middleware/index.js';
 
 const userRouter = express.Router();
 
@@ -367,7 +368,46 @@ userRouter.post('/resetPassword',uploaded, resetPassword);
  */
 
 
+
+
   userRouter.delete('/delete/:id', verifyToken, isAdmin, deleteClientById);
+
+
+  /**
+ * @swagger
+ * /user/changeRole/{id}:
+ *   put:
+ *     summary: change user role
+ *     tags: [Admin vs Authentications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: ['user', 'RIB', 'hospital', 'admin']
+ *                 description: The updated role of the user
+ *     responses:
+ *       200:
+ *         description: role of user updated successfully
+ *       404:
+ *         description: Case not found
+ *       500:
+ *         description: Internal server error
+ */
+  userRouter.put('/changeRole/:id',verifyToken, isAdmin,changeUserRole);
 
 /**
  * @swagger
@@ -400,7 +440,7 @@ userRouter.post('/resetPassword',uploaded, resetPassword);
  *                 type: string
  */
 
-userRouter.get('/all', getAllClients);
+userRouter.get('/all',verifyToken, isAdmin,getAllClients);
 
 /**
  * @swagger
@@ -440,7 +480,7 @@ userRouter.get('/all', getAllClients);
  *       409:
  *         description: Conflict - Agent already exists
  */
-userRouter.post('/createAgent', uploaded, createAgent);
+userRouter.post('/createAgent', uploaded,verifyToken, isRIB,createAgent);
 
 /**
  * @swagger
@@ -480,7 +520,7 @@ userRouter.post('/createAgent', uploaded, createAgent);
  *       409:
  *         description: Conflict - Doctor already exists
  */
-userRouter.post('/createDoctor', uploaded, createDoctor);
+userRouter.post('/createDoctor', uploaded, verifyToken, isHospital,createDoctor);
 
 /**
  * @swagger
@@ -508,7 +548,7 @@ userRouter.post('/createDoctor', uploaded, createDoctor);
  *                   phone:
  *                     type: string
  */
-userRouter.get('/getAllAgents', verifyToken, isAdmin, getAllAgents);
+userRouter.get('/getAllAgents', verifyToken, isRIB, getAllAgents);
 
 /**
  * @swagger
@@ -536,7 +576,7 @@ userRouter.get('/getAllAgents', verifyToken, isAdmin, getAllAgents);
  *                   phone:
  *                     type: string
  */
-userRouter.get('/getAllDoctors', verifyToken, isAdmin, getAllDoctors);
+userRouter.get('/getAllDoctors', verifyToken, isHospital, getAllDoctors);
 
 /**
  * @swagger
@@ -560,7 +600,7 @@ userRouter.get('/getAllDoctors', verifyToken, isAdmin, getAllDoctors);
  *       404:
  *         description: Agent not found
  */
-userRouter.delete('/deleteAgent/:id', verifyToken, isAdmin, deleteAgent);
+userRouter.delete('/deleteAgent/:id', verifyToken, isRIB, deleteAgent);
 
 /**
  * @swagger
@@ -584,6 +624,6 @@ userRouter.delete('/deleteAgent/:id', verifyToken, isAdmin, deleteAgent);
  *       404:
  *         description: Doctor not found
  */
-userRouter.delete('/deleteDoctor/:id', verifyToken, isAdmin, deleteDoctor);
+userRouter.delete('/deleteDoctor/:id', verifyToken, isHospital, deleteDoctor);
 
 export default userRouter;

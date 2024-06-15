@@ -1,6 +1,6 @@
 
 import express  from "express";
-import { isAdmin,isLawyer ,uploaded,verifyToken} from "../middleware";
+import { isAdmin,isRIB,uploaded,verifyToken} from "../middleware";
 import {createCase,getbyId, getAll,updateCase,deleteCaseById, adminUpdateCase,
   lawyerAcceptRejectCase,lawyerUpdateCaseProgress, getbyUserId,
   getCaseCounts, deleteAll} from "../controllers/case";
@@ -434,8 +434,8 @@ const caseRouter = express.Router();
   caseRouter.put("/userUpdateCase/:id",uploaded,verifyToken,updateCase);
   caseRouter.put("/adminUpdateCase/:id",verifyToken, isAdmin,adminUpdateCase);
   caseRouter.put("/adminUpdatesCase/:id",verifyToken, isAdmin,adminUpdateCase);
-  caseRouter.put("/lawyerAcceptReject/:id",verifyToken,isLawyer,lawyerAcceptRejectCase);
-  caseRouter.put("/lawyerUpdateCase/:id",verifyToken,isLawyer,lawyerUpdateCaseProgress);
+  caseRouter.put("/lawyerAcceptReject/:id",verifyToken,isRIB,lawyerAcceptRejectCase);
+  caseRouter.put("/lawyerUpdateCase/:id",verifyToken,isRIB,lawyerUpdateCaseProgress);
 
 export default caseRouter;
               
