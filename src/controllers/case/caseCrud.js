@@ -171,20 +171,20 @@ export const getbyUserId = async (req, res) => {
 
 // ############################################
 
-export const adminUpdateCase = async (req, res) => {
+export const adminUpdateCaseToRIB = async (req, res) => {
   try {
     const caseId = req.params.id;
-    const userId = req.body.lawyerId;
+    const userId = req.body.ribId;
 
     if (!ObjectId.isValid(userId)) {
       return res.status(400).json({ error: 'Invalid user ID' });
     }
 
-    const lawyerName = await USER.findById(userId);
+    const RIBbranch = await USER.findById(userId);
 
     const updatedCase = await Case.findByIdAndUpdate(
       caseId,
-      { assignedTo: lawyerName.name },
+      { assignedTo: RIBbranch.name },
       { new: true }
     );
 
@@ -192,7 +192,7 @@ export const adminUpdateCase = async (req, res) => {
       return res.status(404).json({ error: 'Case not found' });
     }
 
-    await sendEmail(lawyerName.email, `Metre ${lawyerName.name}`, `You have been assigned a new case.`);
+    await sendEmail(RIBbranch.email, ` ${RIBbranch.name}`, `You have been assigned a new case.`);
 
     return res.status(200).json(updatedCase);
   } catch (error) {
@@ -200,6 +200,38 @@ export const adminUpdateCase = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const adminUpdateCaseToHospital = async (req, res) => {
+  try {
+    const caseId = req.params.id;
+    const userId = req.body.hospitalId;
+
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    const hospitalBranch = await USER.findById(userId);
+
+    const updatedCase = await Case.findByIdAndUpdate(
+      caseId,
+      { assignedTo: hospitalBranch.name },
+      { new: true }
+    );
+
+    if (!updatedCase) {
+      return res.status(404).json({ error: 'Case not found' });
+    }
+
+    await sendEmail(hospitalBranch.email, ` ${hospitalBranch.name}`, `You have been assigned a new case.`);
+
+    return res.status(200).json(updatedCase);
+  } catch (error) {
+    console.error('Error updating case:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// #######################################################################
 
 export const lawyerAcceptRejectCase = async (req, res) => {
   try {

@@ -3,7 +3,9 @@ import express  from "express";
 import { isAdmin,isRIB,uploaded,verifyToken} from "../middleware";
 import {createCase,getbyId, getAll,updateCase,deleteCaseById, adminUpdateCase,
   lawyerAcceptRejectCase,lawyerUpdateCaseProgress, getbyUserId,
-  getCaseCounts, deleteAll} from "../controllers/case";
+  getCaseCounts, deleteAll,
+  adminUpdateCaseToRIB,
+  adminUpdateCaseToHospital} from "../controllers/case";
 
 const caseRouter = express.Router();
 
@@ -228,7 +230,7 @@ const caseRouter = express.Router();
  */
 /**
  * @swagger
- * /Case/adminUpdateCase/{id}:
+ * /Case/adminUpdateCaseToRib/{id}:
  *   put:
  *     summary: An admin may update a case by ID to assign it to the RIB
  *     tags: [Admin vs case]
@@ -262,7 +264,7 @@ const caseRouter = express.Router();
 
 /**
  * @swagger
- * /Case/adminUpdatesCase/{id}:
+ * /Case/adminUpdatesCaseToHospital/{id}:
  *   put:
  *     summary: An admin may update a case by ID to assign it to the Hospital
  *     tags: [Admin vs case]
@@ -432,8 +434,8 @@ const caseRouter = express.Router();
   caseRouter.delete("/deleteCase/:id",verifyToken,isAdmin,deleteCaseById);
   caseRouter.get("/getCaseById/:id", getbyId);
   caseRouter.put("/userUpdateCase/:id",uploaded,verifyToken,updateCase);
-  caseRouter.put("/adminUpdateCase/:id",verifyToken, isAdmin,adminUpdateCase);
-  caseRouter.put("/adminUpdatesCase/:id",verifyToken, isAdmin,adminUpdateCase);
+  caseRouter.put("/adminUpdateCaseToRib/:id",verifyToken, isAdmin,adminUpdateCaseToRIB);
+  caseRouter.put("/adminUpdatesCaseToHospital/:id",verifyToken, isAdmin,adminUpdateCaseToHospital);
   caseRouter.put("/lawyerAcceptReject/:id",verifyToken,isRIB,lawyerAcceptRejectCase);
   caseRouter.put("/lawyerUpdateCase/:id",verifyToken,isRIB,lawyerUpdateCaseProgress);
 

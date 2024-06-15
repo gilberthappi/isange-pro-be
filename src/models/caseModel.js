@@ -1,3 +1,4 @@
+import { response } from "express";
 import mongoose from "mongoose";
 const caseSchema = mongoose.Schema({
 
@@ -12,6 +13,13 @@ const caseSchema = mongoose.Schema({
     photo: [String],
     documents:[String],
     createdBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    isAccepted:{type:Boolean, default:false},
+    subscriptionStatus: {
+        type: String,
+      },
+      subscriptionType: {
+        type: String,
+      },
       description: {
         type: String,
         maxlength: 2000,
@@ -23,6 +31,15 @@ const caseSchema = mongoose.Schema({
         type: Date,
         default: Date.now,
       },
+    progress: String,
+    assignedTo: {
+        type: String,
+        default: null
+    },
+    responseText: {
+        type: String,
+        default: null
+    },
 });
 export const Case =mongoose.model("Case", caseSchema);
 
