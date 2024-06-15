@@ -7,6 +7,12 @@ import {
   resetPassword,
   deleteClientById,
   getAllClients,
+  createAgent,
+  createDoctor,
+  getAllAgents,
+  getAllDoctors,
+  deleteAgent,
+  deleteDoctor,
 } from '../controllers/authantecation/userAuth.js';
 import { verifyToken, uploaded, isAdmin } from '../middleware/index.js';
 
@@ -15,7 +21,28 @@ const userRouter = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Authentications
+ *   name: User vs Authentications
+ *   description: ISANGE PRO API
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Admin vs Authentications
+ *   description: ISANGE PRO API
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: RIB vs Authentications
+ *   description: ISANGE PRO API
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Hospital vs Authentications
  *   description: ISANGE PRO API
  */
 
@@ -151,7 +178,7 @@ const userRouter = express.Router();
  * /user/signup:
  *   post:
  *     summary: Client Signup
- *     tags: [Authentications]
+ *     tags: [User vs Authentications]
  *     description: Register a new Client user.
  *     requestBody:
  *       required: true
@@ -192,7 +219,7 @@ userRouter.post('/signup', uploaded, signup);
  * /user/login:
  *   post:
  *     summary: user Login
- *     tags: [Authentications]
+ *     tags: [User vs Authentications]
  *     description: Authenticate a user and obtain an access token.
  *     requestBody:
  *       required: true
@@ -222,7 +249,7 @@ userRouter.post('/login', uploaded, login);
  * /user/changePassword:
  *   post:
  *     summary: user change Password
- *     tags: [Authentications]
+ *     tags: [User vs Authentications]
  *     description: Change the password of an authenticated Client.
  *     security:
  *       - bearerAuth: []
@@ -256,7 +283,7 @@ userRouter.post('/changePassword',uploaded, verifyToken, changePassword);
  * /user/forgotPassword:
  *   post:
  *     summary: Forgot Password
- *     tags: [Authentications]
+ *     tags: [User vs Authentications]
  *     description: Initiate the process to reset the user's password.
  *     requestBody:
  *       required: true
@@ -285,7 +312,7 @@ userRouter.post('/changePassword',uploaded, verifyToken, changePassword);
  * /user/resetPassword:
  *   post:
  *     summary: Reset Password
- *     tags: [Authentications]
+ *     tags: [User vs Authentications]
  *     description: Reset the user's password using a valid reset token.
  *     requestBody:
  *       required: true
@@ -321,7 +348,7 @@ userRouter.post('/resetPassword',uploaded, resetPassword);
  * /user/delete/{id}:
  *   delete:
  *     summary: Delete a Client by ID
- *     tags: [Authentications]
+ *     tags: [Admin vs Authentications]
  *     description: Delete a Client by ID
  *     security:
  *       - bearerAuth: []
@@ -347,7 +374,7 @@ userRouter.post('/resetPassword',uploaded, resetPassword);
  * /user/all:
  *   get:
  *     summary: Get all users
- *     tags: [Authentications]
+ *     tags: [Admin vs Authentications]
  *     security:
  *       - bearerAuth: []
  *     description: Retrieve a list of all users.
@@ -374,5 +401,189 @@ userRouter.post('/resetPassword',uploaded, resetPassword);
  */
 
 userRouter.get('/all', getAllClients);
+
+/**
+ * @swagger
+ * /user/createAgent:
+ *   post:
+ *     summary: Create a new Agent
+ *     tags: [RIB vs Authentications]
+ *     description: Register a new Agent.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               confirmPassword:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - password
+ *               - confirmPassword
+ *     responses:
+ *       201:
+ *         description: Agent registered successfully
+ *       400:
+ *         description: Bad Request - Invalid data
+ *       409:
+ *         description: Conflict - Agent already exists
+ */
+userRouter.post('/createAgent', uploaded, createAgent);
+
+/**
+ * @swagger
+ * /user/createDoctor:
+ *   post:
+ *     summary: Create a new Doctor
+ *     tags: [Hospital vs Authentications]
+ *     description: Register a new Doctor.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               confirmPassword:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - password
+ *               - confirmPassword
+ *     responses:
+ *       201:
+ *         description: Doctor registered successfully
+ *       400:
+ *         description: Bad Request - Invalid data
+ *       409:
+ *         description: Conflict - Doctor already exists
+ */
+userRouter.post('/createDoctor', uploaded, createDoctor);
+
+/**
+ * @swagger
+ * /user/getAllAgents:
+ *   get:
+ *     summary: Get all Agents
+ *     tags: [RIB vs Authentications]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieve a list of all agents.
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   phone:
+ *                     type: string
+ */
+userRouter.get('/getAllAgents', verifyToken, isAdmin, getAllAgents);
+
+/**
+ * @swagger
+ * /user/getAllDoctors:
+ *   get:
+ *     summary: Get all Doctors
+ *     tags: [Hospital vs Authentications]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieve a list of all doctors.
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   phone:
+ *                     type: string
+ */
+userRouter.get('/getAllDoctors', verifyToken, isAdmin, getAllDoctors);
+
+/**
+ * @swagger
+ * /user/deleteAgent/{id}:
+ *   delete:
+ *     summary: Delete an Agent by ID
+ *     tags: [RIB vs Authentications]
+ *     description: Delete an agent by ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The Agent ID
+ *     responses:
+ *       200:
+ *         description: Agent deleted successfully
+ *       404:
+ *         description: Agent not found
+ */
+userRouter.delete('/deleteAgent/:id', verifyToken, isAdmin, deleteAgent);
+
+/**
+ * @swagger
+ * /user/deleteDoctor/{id}:
+ *   delete:
+ *     summary: Delete a Doctor by ID
+ *     tags: [Hospital vs Authentications]
+ *     description: Delete a doctor by ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The Doctor ID
+ *     responses:
+ *       200:
+ *         description: Doctor deleted successfully
+ *       404:
+ *         description: Doctor not found
+ */
+userRouter.delete('/deleteDoctor/:id', verifyToken, isAdmin, deleteDoctor);
 
 export default userRouter;

@@ -263,3 +263,194 @@ export const deleteClientById = async (req, res) => {
     });
   }
 };
+
+
+//  admin change user roles
+export const changeUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    const user = await USER.findByIdAndUpdate(id, { role
+    }, { new: true });
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found',
+      });
+    }
+    res.status(200).json({
+      message: 'User role changed successfully',
+      user,
+    });
+  }
+  catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  }
+}
+
+// company which have role=RIB create a new user make his/her role=agent
+export const createAgent = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await USER.findOne({ email });
+    
+    if (user) {
+      return res.status(409).json({
+        message: 'User with this email already exists',
+      });
+    }
+    const newUser = await USER.create(req.body);
+    newUser.role = 'agent';
+    await newUser.save();
+
+    if (!newUser) {
+      res.status(404).json({ message: 'Failed to register' });
+    }
+    const token = generateToken({
+      id: newUser.id,
+      role:newUser.role,
+      name:newUser.name,
+      phone:newUser.phone,
+      location:newUser.location,
+    });
+    res.status(201).json({
+      message: 'User registered successfully',
+      access_token: token,
+      USER: {
+        email: newUser.email,
+        location: newUser.location,
+        name: newUser.name,
+        phone: newUser.phone,
+        role: newUser.role,
+      },
+    });
+  }
+  catch (error) {
+    console.log(error);
+  }
+}
+
+
+//  create user role=doctor
+export const createDoctor = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await
+      USER.findOne({ email });
+    if (user) {
+      return res.status(409).json({
+        message: 'User with this email already exists',
+      });
+    }
+    const newUser = await USER.create(req.body);
+    newUser.role = 'doctor';
+    await newUser.save();
+    if (!newUser) {
+      res.status(404).json({ message: 'Failed to register' });
+    }
+    const token = generateToken({
+      id: newUser.id,
+      role:newUser.role,
+      name:newUser.name,
+      phone:newUser.phone,
+      location:newUser.location,
+    });
+    res.status(201).json({
+      message: 'User registered successfully',
+      access_token: token,
+      USER: {
+        email: newUser.email,
+        location: newUser.location,
+        name: newUser.name,
+        phone: newUser.phone,
+        role: newUser.role,
+      },
+    });
+  }
+  catch (error) {
+    console.log(error);
+  }
+}
+
+// person who have role of RIB can manage to delete user who have role=agent
+export const deleteAgent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await USER.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found',
+      });
+    }
+    res.status(200).json({
+      message: 'User deleted successfully',
+      user,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  }
+};
+
+// RIB can getall agents
+export const getAllAgents = async (req, res) => {
+  try {
+    const agents = await USER.find({ role: 'agent' });
+    // sort agents by latest
+    agents.sort((a, b) => b.date - a.date);
+    res.status(200).json({
+      message: 'All agents',
+      agents,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  }
+};
+
+// person who have role of hospital can manage to delete user who have role=doctor
+export const deleteDoctor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await USER.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found',
+      });
+    }
+    res.status(200).json({
+      message: 'User deleted successfully',
+      user,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  }
+};
+
+// hospital can getall doctors
+export const getAllDoctors = async (req, res) => {
+  try {
+    const doctors = await USER.find({ role: 'doctor' });
+    // sort doctors by latest
+    doctors.sort((a, b) => b.date - a.date);
+    res.status(200).json({
+      message: 'All doctors',
+      doctors,
+    });
+  }
+  catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  }
+}

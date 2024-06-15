@@ -8,7 +8,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
+const { ObjectId } = require('mongoose').Types;
 cloudinary.config({
   cloud_name: process.env.CLOUDNAME,
   api_key: process.env.APIKEY,
@@ -95,7 +95,81 @@ export const createCase = async (req, res) => {
   }
 };
 
-const { ObjectId } = require('mongoose').Types;
+export const updateCase = async (req, res) => {
+  try {
+    const caseId = req.params.id;
+    const updatedData = req.body;
+    const userId = req.userId;
+
+    const user = await USER.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const foundCase = await Case.findById(caseId);
+    if (!foundCase) {
+      return res.status(404).json({ error: "Case not found" });
+    }
+
+    // Update only the fields present in updatedData
+    const updatedCase = await Case.findByIdAndUpdate(caseId, { $set: updatedData }, { new: true });
+
+    const allUsers = await USER.find();
+    const adminEmails = allUsers.filter((user) => user.role === 'admin').map((admin) => admin.email);
+
+    for (const adminEmail of adminEmails) {
+      try {
+        const emailSubject = `Case Updated: ${updatedCase.caseTitle}`;
+        const emailTextContent = `A case titled "${updatedCase.caseTitle}" has been updated. Please log in to review the details.`;
+        const emailHtmlContent = `
+        <div style="font-family: Arial, sans-serif; color: black;">
+          <p><strong>Dear Admin,</strong></p>
+          <p>We are pleased to inform you that a case has been updated in the system. Below are the details of the case:</p>
+          <ul>
+            <li><strong>Case Title:</strong> ${updatedCase.caseTitle}</li>
+            <li><strong>Description:</strong> ${updatedCase.description}</li>
+            <li><strong>Type of Case:</strong> ${updatedCase.typeOfCase}</li>
+            <li><strong>Date of Incident:</strong> ${updatedCase.dateOfIncident || 'Not provided'}</li>
+            <li><strong>Created By:</strong> ${user.name}</li>
+          </ul>
+          <p>Please log in to the system to review the case and take any necessary actions.</p>
+          <p>Thank you for your attention to this matter.</p>
+          <p>Best regards,</p>
+          <p>Isange pro</p>
+        </div>
+        `;
+
+        await sendEmail(adminEmail, emailSubject, emailTextContent, emailHtmlContent);
+        console.log(`Email sent to ${adminEmail}`);
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+      }
+    }
+
+    res.status(200).json(updatedCase);
+  } catch (error) {
+    console.error("Error updating case:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getbyUserId = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const CASE = await Case.find({ createdBy: userId });
+
+    if (!CASE) {
+      return res.status(404).json({ error: "Case not found" });
+    }
+
+    res.status(200).json(CASE);
+  } catch (error) {
+    console.error("Error getting case by user ID:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// ############################################
 
 export const adminUpdateCase = async (req, res) => {
   try {
@@ -157,63 +231,7 @@ export const lawyerAcceptRejectCase = async (req, res) => {
   }
 };
 
-export const updateCase = async (req, res) => {
-  try {
-    const caseId = req.params.id;
-    const updatedData = req.body;
-    const userId = req.userId;
 
-    const user = await USER.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const foundCase = await Case.findById(caseId);
-    if (!foundCase) {
-      return res.status(404).json({ error: "Case not found" });
-    }
-
-    // Update only the fields present in updatedData
-    const updatedCase = await Case.findByIdAndUpdate(caseId, { $set: updatedData }, { new: true });
-
-    const allUsers = await USER.find();
-    const adminEmails = allUsers.filter((user) => user.role === 'admin').map((admin) => admin.email);
-
-    for (const adminEmail of adminEmails) {
-      try {
-        const emailSubject = `Case Updated: ${updatedCase.caseTitle}`;
-        const emailTextContent = `A case titled "${updatedCase.caseTitle}" has been updated. Please log in to review the details.`;
-        const emailHtmlContent = `
-        <div style="font-family: Arial, sans-serif; color: black;">
-          <p><strong>Dear Admin,</strong></p>
-          <p>We are pleased to inform you that a case has been updated in the system. Below are the details of the case:</p>
-          <ul>
-            <li><strong>Case Title:</strong> ${updatedCase.caseTitle}</li>
-            <li><strong>Description:</strong> ${updatedCase.description}</li>
-            <li><strong>Type of Case:</strong> ${updatedCase.typeOfCase}</li>
-            <li><strong>Date of Incident:</strong> ${updatedCase.dateOfIncident || 'Not provided'}</li>
-            <li><strong>Created By:</strong> ${user.name}</li>
-          </ul>
-          <p>Please log in to the system to review the case and take any necessary actions.</p>
-          <p>Thank you for your attention to this matter.</p>
-          <p>Best regards,</p>
-          <p>Isange pro</p>
-        </div>
-        `;
-
-        await sendEmail(adminEmail, emailSubject, emailTextContent, emailHtmlContent);
-        console.log(`Email sent to ${adminEmail}`);
-      } catch (emailError) {
-        console.error('Error sending email:', emailError);
-      }
-    }
-
-    res.status(200).json(updatedCase);
-  } catch (error) {
-    console.error("Error updating case:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
 
 export const lawyerUpdateCaseProgress = async (req, res) => {
   try {
@@ -316,21 +334,6 @@ export const getbyId = async (req, res) => {
   }
 };
 
-export const getbyUserId = async (req, res) => {
-  try {
-    const userId = req.userId;
-    const CASE = await Case.find({ createdBy: userId });
-
-    if (!CASE) {
-      return res.status(404).json({ error: "Case not found" });
-    }
-
-    res.status(200).json(CASE);
-  } catch (error) {
-    console.error("Error getting case by user ID:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
 
 export const getCaseCounts = async (req, res) => {
   try {
