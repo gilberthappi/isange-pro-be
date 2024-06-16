@@ -270,25 +270,42 @@ export const changeUserRole = async (req, res) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
-    const user = await USER.findByIdAndUpdate(id, { role
-    }, { new: true });
+
+    // Validate id
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: 'Invalid user ID',
+      });
+    }
+
+    // Validate role
+    if (!role) {
+      return res.status(400).json({
+        message: 'Role is required',
+      });
+    }
+
+    // Update the user role
+    const user = await USER.findByIdAndUpdate(id, { role }, { new: true });
+
     if (!user) {
       return res.status(404).json({
         message: 'User not found',
       });
     }
+
     res.status(200).json({
       message: 'User role changed successfully',
       user,
     });
-  }
-  catch (error) {
-    console.error(error);
+    console.log('user role', user);
+  } catch (error) {
+    console.error('Error changing user role:', error);
     res.status(500).json({
       message: 'Internal Server Error',
     });
   }
-}
+};
 
 // company which have role=RIB create a new user make his/her role=agent
 export const createAgent = async (req, res) => {
