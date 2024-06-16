@@ -27,7 +27,8 @@ export const signup = async (req, res) => {
     }
 
     const hashedPassword = await hashPassword(req.body.password);
-
+   const hashedConfirmPassword = await hashPassword(req.body.confirmPassword);
+    req.body.confirmPassword = hashedConfirmPassword;
     req.body.password = hashedPassword;
 
     const newUser = await USER.create(req.body);
@@ -242,6 +243,28 @@ export const getAllClients = async (req, res) => {
   }
 };
 
+// Get Client By Id
+export const getClientById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const client = await USER.findById(id);
+    if (!client) {
+      return res.status(404).json({
+        message: 'Client not found',
+      });
+    }
+    res.status(200).json({
+      message: 'Client found',
+      client,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  }
+};
+
 //delete client by id 
 export const deleteClientById = async (req, res) => {
   try {
@@ -265,47 +288,41 @@ export const deleteClientById = async (req, res) => {
 };
 
 
-//  admin change user roles
-export const changeUserRole = async (req, res) => {
+// admin change user roles
+export const changeRole = async (req, res) => {
   try {
     const { id } = req.params;
-    const { role } = req.body;
+    const { role } = req.body; // Destructure role from req.body
 
-    // Validate id
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        message: 'Invalid user ID',
-      });
-    }
-
-    // Validate role
     if (!role) {
       return res.status(400).json({
         message: 'Role is required',
       });
     }
 
-    // Update the user role
-    const user = await USER.findByIdAndUpdate(id, { role }, { new: true });
-
+    const user = await USER.findById(id);
     if (!user) {
       return res.status(404).json({
         message: 'User not found',
       });
     }
 
+    user.role = role; // Assign role to user
+    console.log('data of role:', user.role);
+    await user.save();
+
     res.status(200).json({
-      message: 'User role changed successfully',
+      message: 'User role updated successfully',
       user,
     });
-    console.log('user role', user);
   } catch (error) {
-    console.error('Error changing user role:', error);
+    console.error(error);
     res.status(500).json({
       message: 'Internal Server Error',
     });
   }
-};
+}
+
 
 // company which have role=RIB create a new user make his/her role=agent
 export const createAgent = async (req, res) => {

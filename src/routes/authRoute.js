@@ -13,7 +13,8 @@ import {
   getAllDoctors,
   deleteAgent,
   deleteDoctor,
-  changeUserRole,
+  changeRole,
+  getClientById,
 } from '../controllers/authantecation/userAuth.js';
 import { verifyToken, uploaded, isAdmin, isHospital, isRIB } from '../middleware/index.js';
 
@@ -407,7 +408,7 @@ userRouter.post('/resetPassword',uploaded, resetPassword);
  *       500:
  *         description: Internal server error
  */
-  userRouter.put('/changeRole/:id',verifyToken, isAdmin,changeUserRole);
+  userRouter.put('/changeRole/:id',uploaded,verifyToken, isAdmin,changeRole);
 
 /**
  * @swagger
@@ -441,6 +442,33 @@ userRouter.post('/resetPassword',uploaded, resetPassword);
  */
 
 userRouter.get('/all',verifyToken, isAdmin,getAllClients);
+
+
+
+/**
+ * @swagger
+ * /user/getuserById/:id:
+ *   get:
+ *     summary: Get a user by ID
+ *     tags: [Admin vs Authentications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: The user details by ID
+ *       404:
+ *         description: user not found
+ */
+
+
+userRouter.get('getuserById/{id}',verifyToken, isAdmin,getClientById);
 
 /**
  * @swagger
