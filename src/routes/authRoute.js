@@ -449,7 +449,7 @@ userRouter.get('/all',verifyToken, isAdmin,getAllClients);
  * @swagger
  * /user/getuserById/{id}:
  *   get:
- *     summary: Get a user by ID
+ *     summary: get  user by id
  *     tags: [Admin vs Authentications]
  *     security:
  *       - bearerAuth: []
@@ -468,7 +468,7 @@ userRouter.get('/all',verifyToken, isAdmin,getAllClients);
  */
 
 
-userRouter.get('getuserById/:id',verifyToken, isAdmin,getClientById);
+userRouter.get('/getuserById/:id',verifyToken, isAdmin,getClientById);
 
 /**
  * @swagger

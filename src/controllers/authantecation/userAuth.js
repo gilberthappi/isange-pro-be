@@ -247,6 +247,7 @@ export const getAllClients = async (req, res) => {
 export const getClientById = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('id:', id);
     const client = await USER.findById(id);
     if (!client) {
       return res.status(404).json({
