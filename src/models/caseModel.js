@@ -5,27 +5,16 @@ const caseSchema = mongoose.Schema({
 
     caseTitle: String,
     typeOfCase: String,
-    category: String,
     status: String,
-    riskLevel: String,
     dateOfIncident: String,
     location: String,
     photo: [String],
     documents:[String],
     createdBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     isAccepted:{type:Boolean, default:false},
-    subscriptionStatus: {
-        type: String,
-      },
-      subscriptionType: {
-        type: String,
-      },
       description: {
         type: String,
         maxlength: 2000,
-      },
-      duration: {
-        type: String,
       },
       createdAt: {
         type: Date,
@@ -40,6 +29,15 @@ const caseSchema = mongoose.Schema({
         type: String,
         default: null
     },
+    victim_name: String,
+    victim_email: String,
+    victim_phone: String,
+    national_id: String,
+    gender: String,
+    risk_type: String,
+    current_risk_level: String,
+    interventions: String,
+
 });
 export const Case =mongoose.model("Case", caseSchema);
 
