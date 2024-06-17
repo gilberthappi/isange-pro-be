@@ -1,11 +1,13 @@
 
 import express  from "express";
-import { isAdmin,isRIB,uploaded,verifyToken} from "../middleware";
+import { isAdmin,isHospital,isRIB,uploaded,verifyToken} from "../middleware";
 import {createCase,getbyId, getAll,updateCase,deleteCaseById, adminUpdateCase,
   lawyerAcceptRejectCase,lawyerUpdateCaseProgress, getbyUserId,
   getCaseCounts, deleteAll,
   adminUpdateCaseToRIB,
-  adminUpdateCaseToHospital} from "../controllers/case";
+  adminUpdateCaseToHospital,
+  RIBAcceptRejectCase,
+  hospitalAcceptRejectCase} from "../controllers/case";
 
 const caseRouter = express.Router();
 
@@ -250,7 +252,7 @@ const caseRouter = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               RIB_Id:
+ *               ribId:
  *                 type: string
  *                 description: The ID of the RIB to assign the case to
  *     responses:
@@ -284,7 +286,7 @@ const caseRouter = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               HospitalId:
+ *               hospitalId:
  *                 type: string
  *                 description: The ID of the Hospital to assign the case to
  *     responses:
@@ -296,39 +298,74 @@ const caseRouter = express.Router();
  *         description: Some error occurred
  */
 
-// /**
-//  * @swagger
-//  * /Case/lawyerAcceptReject/{id}:
-//  *   put:
-//  *     summary: A lawyer may accept or reject a case by ID
-//  *     tags: [RIB vs case]
-//  *     security:
-//  *       - bearerAuth: []
-//  *     parameters:
-//  *       - in: path
-//  *         name: id
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The case ID
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               isAccepted:
-//  *                 type: boolean
-//  *                 description: Whether the lawyer accepts the case
-//  *     responses:
-//  *       200:
-//  *         description: The case status was updated
-//  *       404:
-//  *         description: Case not found
-//  *       500:
-//  *         description: Some error occurred
-//  */
+/**
+ * @swagger
+ * /Case/RIBAcceptReject/{id}:
+ *   put:
+ *     summary: A RIB may accept or reject a case by ID
+ *     tags: [RIB vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The case ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isRIBAccepted:
+ *                 type: boolean
+ *                 description: Whether the RIB accepts the case
+ *     responses:
+ *       200:
+ *         description: The case status was updated
+ *       404:
+ *         description: Case not found
+ *       500:
+ *         description: Some error occurred
+ */
+
+
+/**
+ * @swagger
+ * /Case/hospitalAcceptReject/{id}:
+ *   put:
+ *     summary: A hospital may accept or reject a case by ID
+ *     tags: [Hospital vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The case ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isHospitalAccepted:
+ *                 type: boolean
+ *                 description: Whether the Hospital accepts the case
+ *     responses:
+ *       200:
+ *         description: The case status was updated
+ *       404:
+ *         description: Case not found
+ *       500:
+ *         description: Some error occurred
+ */
 
 // /**
 //  * @swagger
@@ -434,9 +471,10 @@ const caseRouter = express.Router();
   caseRouter.delete("/deleteCase/:id",verifyToken,isAdmin,deleteCaseById);
   caseRouter.get("/getCaseById/:id", getbyId);
   caseRouter.put("/userUpdateCase/:id",uploaded,verifyToken,updateCase);
-  caseRouter.put("/adminUpdateCaseToRib/:id",verifyToken, isAdmin,adminUpdateCaseToRIB);
-  caseRouter.put("/adminUpdatesCaseToHospital/:id",verifyToken, isAdmin,adminUpdateCaseToHospital);
-  caseRouter.put("/lawyerAcceptReject/:id",verifyToken,isRIB,lawyerAcceptRejectCase);
+  caseRouter.put("/adminUpdateCaseToRib/:id",uploaded,verifyToken, isAdmin,adminUpdateCaseToRIB);
+  caseRouter.put("/adminUpdatesCaseToHospital/:id",uploaded,verifyToken, isAdmin,adminUpdateCaseToHospital);
+  caseRouter.put("/RIBAcceptReject/:id",uploaded,verifyToken,isRIB,RIBAcceptRejectCase);
+  caseRouter.put("/hospitalAcceptReject/:id",uploaded,verifyToken,isHospital,hospitalAcceptRejectCase);
   caseRouter.put("/lawyerUpdateCase/:id",verifyToken,isRIB,lawyerUpdateCaseProgress);
 
 export default caseRouter;

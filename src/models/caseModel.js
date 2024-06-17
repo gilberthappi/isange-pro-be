@@ -11,7 +11,8 @@ const caseSchema = mongoose.Schema({
     photo: [String],
     documents:[String],
     createdBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-    isAccepted:{type:Boolean, default:false},
+    isRIBAccepted:{type:Boolean, default:false},
+    isHospitalAccepted:{type:Boolean, default:false},
       description: {
         type: String,
         maxlength: 2000,
@@ -21,10 +22,9 @@ const caseSchema = mongoose.Schema({
         default: Date.now,
       },
     progress: String,
-    assignedTo: {
-        type: String,
-        default: null
-    },
+
+   assignedToRIB: [{ type: String, unique: true }],
+   assignedToHospital: [{ type: String, unique: true }],
     responseText: {
         type: String,
         default: null

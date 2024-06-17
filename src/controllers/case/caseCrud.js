@@ -1,5 +1,5 @@
+import mongoose from "mongoose";
 import multer from "multer";
-import { transporter } from '../../utils/mailTransport.js';
 import { Case, USER, Subscription } from "../../models";
 import { uploaded } from "../../middleware/photoStorage";
 import { sendEmail } from "../../utils";
@@ -8,7 +8,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 
 dotenv.config();
-const { ObjectId } = require('mongoose').Types;
+
 cloudinary.config({
   cloud_name: process.env.CLOUDNAME,
   api_key: process.env.APIKEY,
@@ -171,29 +171,44 @@ export const getbyUserId = async (req, res) => {
 
 // ############################################
 
+const addToAssignedToArrayRIB = async (caseId, name) => {
+  return await Case.findByIdAndUpdate(
+    caseId,
+    { $addToSet: { assignedToRIB: name } },
+    { new: true }
+  );
+};
+
+const addToAssignedToArrayHospital = async (caseId, name) => {
+  return await Case.findByIdAndUpdate(
+    caseId,
+    { $addToSet: { assignedToHospital: name } },
+    { new: true }
+  );
+};
+
 export const adminUpdateCaseToRIB = async (req, res) => {
   try {
     const caseId = req.params.id;
     const userId = req.body.ribId;
 
-    if (!ObjectId.isValid(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ error: 'Invalid user ID' });
     }
 
     const RIBbranch = await USER.findById(userId);
+    if (!RIBbranch) {
+      return res.status(404).json({ error: 'RIB branch not found' });
+    }
 
-    const updatedCase = await Case.findByIdAndUpdate(
-      caseId,
-      { assignedTo: RIBbranch.name },
-      { new: true }
-    );
+    const updatedCase = await addToAssignedToArrayRIB(caseId, RIBbranch.name);
 
     if (!updatedCase) {
       return res.status(404).json({ error: 'Case not found' });
     }
 
-    await sendEmail(RIBbranch.email, ` ${RIBbranch.name}`, `You have been assigned a new case.`);
-
+    await sendEmail(RIBbranch.email, `${RIBbranch.name}`, `You have been assigned a new case.`);
+    console.log('rib:', RIBbranch.name);
     return res.status(200).json(updatedCase);
   } catch (error) {
     console.error('Error updating case:', error);
@@ -205,43 +220,42 @@ export const adminUpdateCaseToHospital = async (req, res) => {
   try {
     const caseId = req.params.id;
     const userId = req.body.hospitalId;
+    console.log('hospital:', userId);
 
-    if (!ObjectId.isValid(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ error: 'Invalid user ID' });
     }
 
     const hospitalBranch = await USER.findById(userId);
+    if (!hospitalBranch) {
+      return res.status(404).json({ error: 'Hospital branch not found' });
+    }
 
-    const updatedCase = await Case.findByIdAndUpdate(
-      caseId,
-      { assignedTo: hospitalBranch.name },
-      { new: true }
-    );
+    const updatedCase = await addToAssignedToArrayHospital(caseId, hospitalBranch.name);
 
     if (!updatedCase) {
       return res.status(404).json({ error: 'Case not found' });
     }
 
-    await sendEmail(hospitalBranch.email, ` ${hospitalBranch.name}`, `You have been assigned a new case.`);
-
+    await sendEmail(hospitalBranch.email, `${hospitalBranch.name}`, `You have been assigned a new case.`);
+    console.log('hospital:', hospitalBranch.name);
     return res.status(200).json(updatedCase);
   } catch (error) {
     console.error('Error updating case:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 // #######################################################################
 
-export const lawyerAcceptRejectCase = async (req, res) => {
+export const RIBAcceptRejectCase = async (req, res) => {
   try {
     const caseId = req.params.id;
-    const isAccepted = req.body.isAccepted;
+    const isRIBAccepted = req.body.isRIBAccepted;
 
     const user = await USER.find();
     const adminEmails = user.filter((user) => user.role === 'admin').map((admin) => admin.email);
 
-    const updatedCase = await Case.findByIdAndUpdate(caseId, { isAccepted: isAccepted }, { new: true });
+    const updatedCase = await Case.findByIdAndUpdate(caseId, { isRIBAccepted: isRIBAccepted }, { new: true });
 
     if (!updatedCase) {
       return res.status(404).json({ error: 'Case not found' });
@@ -249,7 +263,65 @@ export const lawyerAcceptRejectCase = async (req, res) => {
 
     for (const adminEmail of adminEmails) {
       try {
-        await sendEmail(adminEmail, `Case ${updatedCase.caseTitle}`, `Lawyer ${updatedCase.assignedTo} has ${isAccepted ? 'accepted' : 'rejected'} the case.`);
+        const emailSubject = ` Case  Updates`;
+        const emailTextContent = `A case titled "${updatedCase.caseTitle}" has been updated. Please log in to review the details.`;
+        const emailHtmlContent = `
+        <div style="font-family: Arial, sans-serif; color: black;">
+          <p><strong>Dear Admin,</strong></p>
+          <p>We are pleased to inform you that a case has been updated in the system.</p>
+           <p>Case: <strong>${updatedCase.caseTitle}</strong>,  <strong>${updatedCase.assignedToRIB}</strong> has ${isRIBAccepted ? 'accepted' : 'rejected'} the case. </p>
+          <p>Please log in to the system to review the case and take any necessary actions.</p>
+          <p>Thank you for your attention to this matter.</p>
+          <p>Best regards,</p>
+          <p>Isange pro</p>
+          </div>
+        `;
+
+        await sendEmail(adminEmail, emailSubject, emailTextContent, emailHtmlContent);
+        console.log(`Email sent to ${adminEmail}`);
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+      }
+    }
+
+    return res.status(200).json(updatedCase);
+  } catch (error) {
+    console.error('Error updating case status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const hospitalAcceptRejectCase = async (req, res) => {
+  try {
+    const caseId = req.params.id;
+    const isHospitalAccepted = req.body.isHospitalAccepted;
+
+    const user = await USER.find();
+    const adminEmails = user.filter((user) => user.role === 'admin').map((admin) => admin.email);
+
+    const updatedCase = await Case.findByIdAndUpdate(caseId, { isHospitalAccepted: isHospitalAccepted }, { new: true });
+
+    if (!updatedCase) {
+      return res.status(404).json({ error: 'Case not found' });
+    }
+
+    for (const adminEmail of adminEmails) {
+      try {
+        const emailSubject = ` Case  Updates`;
+        const emailTextContent = `A case titled "${updatedCase.caseTitle}" has been updated. Please log in to review the details.`;
+        const emailHtmlContent = `
+        <div style="font-family: Arial, sans-serif; color: black;">
+          <p><strong>Dear Admin,</strong></p>
+          <p>We are pleased to inform you that a case has been updated in the system.</p>
+           <p>Case:<strong> ${updatedCase.caseTitle}</strong>, <strong> ${updatedCase.assignedToHospital}</strong> has ${isHospitalAccepted ? 'accepted' : 'rejected'} the case. </p>
+          <p>Please log in to the system to review the case and take any necessary actions.</p>
+          <p>Thank you for your attention to this matter.</p>
+          <p>Best regards,</p>
+          <p>Isange pro</p>
+          </div>
+        `;
+
+        await sendEmail(adminEmail, emailSubject, emailTextContent, emailHtmlContent);
         console.log(`Email sent to ${adminEmail}`);
       } catch (emailError) {
         console.error('Error sending email:', emailError);
