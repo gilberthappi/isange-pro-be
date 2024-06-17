@@ -336,6 +336,11 @@ export const createAgent = async (req, res) => {
         message: 'User with this email already exists',
       });
     }
+    const hashedPassword = await hashPassword(req.body.password);
+    const hashedConfirmPassword = await hashPassword(req.body.confirmPassword);
+     req.body.confirmPassword = hashedConfirmPassword;
+     req.body.password = hashedPassword;
+ 
     const newUser = await USER.create(req.body);
     newUser.role = 'agent';
     await newUser.save();
@@ -379,6 +384,11 @@ export const createDoctor = async (req, res) => {
         message: 'User with this email already exists',
       });
     }
+    const hashedPassword = await hashPassword(req.body.password);
+    const hashedConfirmPassword = await hashPassword(req.body.confirmPassword);
+     req.body.confirmPassword = hashedConfirmPassword;
+     req.body.password = hashedPassword;
+ 
     const newUser = await USER.create(req.body);
     newUser.role = 'doctor';
     await newUser.save();
