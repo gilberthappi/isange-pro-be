@@ -130,7 +130,7 @@ export const updateCase = async (req, res) => {
             <li><strong>Description:</strong> ${updatedCase.description}</li>
             <li><strong>Type of Case:</strong> ${updatedCase.typeOfCase}</li>
             <li><strong>Date of Incident:</strong> ${updatedCase.dateOfIncident || 'Not provided'}</li>
-            <li><strong>Created By:</strong> ${user.name}</li>
+            <li><strong>Updated By:</strong> ${user.name}</li>
           </ul>
           <p>Please log in to the system to review the case and take any necessary actions.</p>
           <p>Thank you for your attention to this matter.</p>
@@ -245,6 +245,7 @@ export const adminUpdateCaseToHospital = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 // #######################################################################
 
 export const RIBAcceptRejectCase = async (req, res) => {
@@ -337,7 +338,73 @@ export const hospitalAcceptRejectCase = async (req, res) => {
 
 
 
-export const lawyerUpdateCaseProgress = async (req, res) => {
+export const RIBUpdateCaseProgress = async (req, res) => {
+  try {
+    const caseId = req.params.id;
+    const { progress, responseText, current_risk_level, interventions } = req.body;
+
+
+    const loggedInUserId = req.userId;
+
+    // Fetch all users with role 'admin' or 'RIB'
+    const users = await USER.find({ role: { $in: ['admin', 'RIB'] } });
+    const adminEmails = users.map((user) => user.email);
+
+    const foundCase = await Case.findById(caseId);
+
+    if (!foundCase) {
+      return res.status(404).json({ error: "Case not found" });
+    }
+
+    // Update the case fields
+    foundCase.progress = progress;
+    foundCase.responseText = responseText;
+    foundCase.current_risk_level = current_risk_level;
+    foundCase.interventions = interventions;
+    foundCase.updatedBy = loggedInUserId;
+
+    const updatedCase = await foundCase.save();
+
+    // Send emails to all relevant users
+    for (const adminEmail of adminEmails) {
+      try {
+        const emailSubject = `Case Updated: ${updatedCase.caseTitle}`;
+        const emailTextContent = `A case titled "${updatedCase.caseTitle}" has been updated. Please log in to review the details.`;
+        const emailHtmlContent = `
+        <div style="font-family: Arial, sans-serif; color: black;">
+          <p><strong>Dear Admin,</strong></p>
+          <p>We are pleased to inform you that a case has been updated in the system. Below are the details of the case:</p>
+          <ul>
+            <li><strong>Case Title:</strong> ${updatedCase.caseTitle}</li>
+            <li><strong>Description:</strong> ${updatedCase.description}</li>
+            <li><strong>Type of Case:</strong> ${updatedCase.typeOfCase}</li>
+            <li><strong>Date of Incident:</strong> ${updatedCase.dateOfIncident || 'Not provided'}</li>
+            <li><strong>Updated By:</strong>Agent ${loggedInUserId.name}</li>
+          </ul>
+          <p>Please log in to the system to review the case and take any necessary actions.</p>
+          <p>Thank you for your attention to this matter.</p>
+          <p>Best regards,</p>
+          <p>Isange pro</p>
+        </div>
+        `;
+
+        await sendEmail(adminEmail, emailSubject, emailTextContent, emailHtmlContent);
+        console.log(`Email sent to ${adminEmail}`);
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+      }
+    }
+
+    res.status(200).json(updatedCase);
+  } catch (error) {
+    console.error("Error updating case progress:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
+export const hospitalUpdateCaseProgress = async (req, res) => {
   try {
     const caseId = req.params.id;
     const { progress } = req.body;
@@ -489,5 +556,31 @@ export const getCaseCounts = async (req, res) => {
   } catch (error) {
     console.error('Error getting case counts by month:', error);
     res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+//  get all cases assigned to him
+export const getCasesAssignedToRIB = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const cases = await Case.find({ assignedToRIB: userId.name });
+
+    res.status(200).json(cases);
+  } catch (error) {
+    console.error('Error getting cases assigned to RIB:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getCasesAssignedToHospital = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const cases = await Case.find({ assignedToHospital: userId.name });
+
+    res.status(200).json(cases);
+  } catch (error) {
+    console.error('Error getting cases assigned to hospital:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };

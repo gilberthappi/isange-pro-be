@@ -11,6 +11,7 @@ const caseSchema = mongoose.Schema({
     photo: [String],
     documents:[String],
     createdBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    updatedBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     isRIBAccepted:{type:Boolean, default:false},
     isHospitalAccepted:{type:Boolean, default:false},
       description: {

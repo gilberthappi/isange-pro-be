@@ -1,13 +1,16 @@
 
 import express  from "express";
-import { isAdmin,isHospital,isRIB,uploaded,verifyToken} from "../middleware";
-import {createCase,getbyId, getAll,updateCase,deleteCaseById, adminUpdateCase,
-  lawyerAcceptRejectCase,lawyerUpdateCaseProgress, getbyUserId,
+import { isAdmin,isAgent,isDoctor,isHospital,isRIB,uploaded,verifyToken} from "../middleware";
+import {createCase,getbyId, getAll,updateCase,deleteCaseById, getbyUserId,
   getCaseCounts, deleteAll,
   adminUpdateCaseToRIB,
   adminUpdateCaseToHospital,
   RIBAcceptRejectCase,
-  hospitalAcceptRejectCase} from "../controllers/case";
+  hospitalAcceptRejectCase,
+  RIBUpdateCaseProgress,
+  hospitalUpdateCaseProgress,
+  getCasesAssignedToRIB,
+  getCasesAssignedToHospital} from "../controllers/case";
 
 const caseRouter = express.Router();
 
@@ -367,40 +370,89 @@ const caseRouter = express.Router();
  *         description: Some error occurred
  */
 
-// /**
-//  * @swagger
-//  * /Case/lawyerUpdateCase/{id}:
-//  *   put:
-//  *     summary: A lawyer may update the progress of a case by ID
-//  *     tags: [RIB vs case]
-//  *     security:
-//  *       - bearerAuth: []
-//  *     parameters:
-//  *       - in: path
-//  *         name: id
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The case ID
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         multipart/form-data:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               progress:
-//  *                 type: string
-//  *                 enum: ['in progress', 'closed']
-//  *                 description: The updated progress of the case
-//  *     responses:
-//  *       200:
-//  *         description: Case progress updated successfully
-//  *       404:
-//  *         description: Case not found
-//  *       500:
-//  *         description: Internal server error
-//  */
+/**
+ * @swagger
+ * /Case/RIBUpdateCase/{id}:
+ *   put:
+ *     summary: A RIB may update the progress of a case by ID
+ *     tags: [RIB vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The case ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               progress:
+ *                 type: string
+ *                 enum: ['in progress', 'completed', 'closed', 'other']
+ *                 description: The updated progress of the case
+ *               responseText:
+ *                 type: string
+ *               current_risk_level:
+ *                 type: string
+ *               interventions:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Case progress updated successfully
+ *       404:
+ *         description: Case not found
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /Case/hospitalUpdateCase/{id}:
+ *   put:
+ *     summary: A Hospital may update the progress of a case by ID
+ *     tags: [Hospital vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The case ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               progress:
+ *                 type: string
+ *                 enum: ['in progress', 'completed', 'closed', 'other']
+ *                 description: The updated progress of the case
+ *               responseText:
+ *                 type: string
+ *               current_risk_level:
+ *                 type: string
+ *               interventions:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Case progress updated successfully
+ *       404:
+ *         description: Case not found
+ *       500:
+ *         description: Internal server error
+ */
+
+
 
 /**
  * @swagger
@@ -431,6 +483,36 @@ const caseRouter = express.Router();
  *   get:
  *     summary: Get all cases
  *     tags: [User vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieve all cases
+ *     responses:
+ *       200:
+ *         description: List of cases
+ */
+
+
+/**
+ * @swagger
+ * /Case/getCasesAssignedToRIB:
+ *   get:
+ *     summary: Get all cases
+ *     tags: [RIB vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieve all cases
+ *     responses:
+ *       200:
+ *         description: List of cases
+ */
+
+
+/**
+ * @swagger
+ * /Case/getCasesAssignedToHospital:
+ *   get:
+ *     summary: Get all cases
+ *     tags: [Hospital vs case]
  *     security:
  *       - bearerAuth: []
  *     description: Retrieve all cases
@@ -475,8 +557,9 @@ const caseRouter = express.Router();
   caseRouter.put("/adminUpdatesCaseToHospital/:id",uploaded,verifyToken, isAdmin,adminUpdateCaseToHospital);
   caseRouter.put("/RIBAcceptReject/:id",uploaded,verifyToken,isRIB,RIBAcceptRejectCase);
   caseRouter.put("/hospitalAcceptReject/:id",uploaded,verifyToken,isHospital,hospitalAcceptRejectCase);
-  caseRouter.put("/lawyerUpdateCase/:id",verifyToken,isRIB,lawyerUpdateCaseProgress);
-
+  caseRouter.put("/RIBUpdateCase/:id",verifyToken,isAgent,RIBUpdateCaseProgress);
+  caseRouter.put("/hospitalUpdateCase/:id",verifyToken,isDoctor,hospitalUpdateCaseProgress);
+  caseRouter.get("/getCasesAssignedToRIB",verifyToken,isRIB,getCasesAssignedToRIB);
+  caseRouter.get("/getCasesAssignedToHospital",verifyToken,isHospital,getCasesAssignedToHospital);
 export default caseRouter;
               
-//module.exports =studentsRouter; 
