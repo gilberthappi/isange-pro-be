@@ -171,18 +171,18 @@ export const getbyUserId = async (req, res) => {
 
 // ############################################
 
-const addToAssignedToArrayRIB = async (caseId, name) => {
+const addToAssignedToArrayRIB = async (caseId, userId) => {
   return await Case.findByIdAndUpdate(
     caseId,
-    { $addToSet: { assignedToRIB: name } },
+    { $addToSet: { assignedToRIB: userId } },
     { new: true }
   );
 };
 
-const addToAssignedToArrayHospital = async (caseId, name) => {
+const addToAssignedToArrayHospital = async (caseId, userId) => {
   return await Case.findByIdAndUpdate(
     caseId,
-    { $addToSet: { assignedToHospital: name } },
+    { $addToSet: { assignedToHospital: userId } },
     { new: true }
   );
 };
@@ -201,14 +201,13 @@ export const adminUpdateCaseToRIB = async (req, res) => {
       return res.status(404).json({ error: 'RIB branch not found' });
     }
 
-    const updatedCase = await addToAssignedToArrayRIB(caseId, RIBbranch.name);
+    const updatedCase = await addToAssignedToArrayRIB(caseId, userId);
 
     if (!updatedCase) {
       return res.status(404).json({ error: 'Case not found' });
     }
 
     await sendEmail(RIBbranch.email, `${RIBbranch.name}`, `You have been assigned a new case.`);
-    console.log('rib:', RIBbranch.name);
     return res.status(200).json(updatedCase);
   } catch (error) {
     console.error('Error updating case:', error);
@@ -220,7 +219,6 @@ export const adminUpdateCaseToHospital = async (req, res) => {
   try {
     const caseId = req.params.id;
     const userId = req.body.hospitalId;
-    console.log('hospital:', userId);
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ error: 'Invalid user ID' });
@@ -231,20 +229,20 @@ export const adminUpdateCaseToHospital = async (req, res) => {
       return res.status(404).json({ error: 'Hospital branch not found' });
     }
 
-    const updatedCase = await addToAssignedToArrayHospital(caseId, hospitalBranch.name);
+    const updatedCase = await addToAssignedToArrayHospital(caseId, userId);
 
     if (!updatedCase) {
       return res.status(404).json({ error: 'Case not found' });
     }
 
     await sendEmail(hospitalBranch.email, `${hospitalBranch.name}`, `You have been assigned a new case.`);
-    console.log('hospital:', hospitalBranch.name);
     return res.status(200).json(updatedCase);
   } catch (error) {
     console.error('Error updating case:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 // #######################################################################
 
@@ -563,9 +561,12 @@ export const getCaseCounts = async (req, res) => {
 //  get all cases assigned to him
 export const getCasesAssignedToRIB = async (req, res) => {
   try {
-    const userId = req.userId;
-    const cases = await Case.find({ assignedToRIB: userId.name });
-
+    const userId = req.userId; // Assuming req.userId contains the RIB user ID
+    const cases = await Case.find({ assignedToRIB: userId });
+    console.log('RIB:', userId);
+    if (cases.length === 0) {
+      console.log('No cases found for this user.');
+    }
     res.status(200).json(cases);
   } catch (error) {
     console.error('Error getting cases assigned to RIB:', error);
@@ -573,14 +574,19 @@ export const getCasesAssignedToRIB = async (req, res) => {
   }
 };
 
+
 export const getCasesAssignedToHospital = async (req, res) => {
   try {
-    const userId = req.userId;
-    const cases = await Case.find({ assignedToHospital: userId.name });
-
+    const userId = req.userId; // Assuming req.userId contains the Hospital user ID
+    const cases = await Case.find({ assignedToHospital: userId });
+    console.log('Hospital:', userId);
+    if (cases.length === 0) {
+      console.log('No cases found for this user.');
+    }
     res.status(200).json(cases);
   } catch (error) {
     console.error('Error getting cases assigned to hospital:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
