@@ -251,28 +251,36 @@ export const RIBAcceptRejectCase = async (req, res) => {
     const caseId = req.params.id;
     const isRIBAccepted = req.body.isRIBAccepted;
 
-    const user = await USER.find();
-    const adminEmails = user.filter((user) => user.role === 'admin').map((admin) => admin.email);
+    // Find all admin users to notify via email
+    const admins = await USER.find({ role: 'admin' });
+    const adminEmails = admins.map((admin) => admin.email);
 
-    const updatedCase = await Case.findByIdAndUpdate(caseId, { isRIBAccepted: isRIBAccepted }, { new: true });
+    // Update the case with new status
+    const updatedCase = await Case.findByIdAndUpdate(caseId, { isRIBAccepted }, { new: true })
+      .populate('assignedToRIB', 'name')
+      .exec();
 
     if (!updatedCase) {
       return res.status(404).json({ error: 'Case not found' });
     }
 
+    // Ensure assignedToRIB is an array before mapping
+    const assignedToRIB = Array.isArray(updatedCase.assignedToRIB) ? updatedCase.assignedToRIB.map(rib => rib.name).join(', ') : '';
+
+    // Send email notifications to admins
     for (const adminEmail of adminEmails) {
       try {
-        const emailSubject = ` Case  Updates`;
+        const emailSubject = `Case Updates`;
         const emailTextContent = `A case titled "${updatedCase.caseTitle}" has been updated. Please log in to review the details.`;
         const emailHtmlContent = `
-        <div style="font-family: Arial, sans-serif; color: black;">
-          <p><strong>Dear Admin,</strong></p>
-          <p>We are pleased to inform you that a case has been updated in the system.</p>
-           <p>Case: <strong>${updatedCase.caseTitle}</strong>,  <strong>${updatedCase.assignedToRIB}</strong> has ${isRIBAccepted ? 'accepted' : 'rejected'} the case. </p>
-          <p>Please log in to the system to review the case and take any necessary actions.</p>
-          <p>Thank you for your attention to this matter.</p>
-          <p>Best regards,</p>
-          <p>Isange pro</p>
+          <div style="font-family: Arial, sans-serif; color: black;">
+            <p><strong>Dear Admin,</strong></p>
+            <p>We are pleased to inform you that a case has been updated in the system.</p>
+            <p>Case: <strong>${updatedCase.caseTitle}</strong>, assigned to <strong> RIB ${assignedToRIB}</strong> has ${isRIBAccepted ? 'accepted' : 'rejected'} the case.</p>
+            <p>Please log in to the system to review the case and take any necessary actions.</p>
+            <p>Thank you for your attention to this matter.</p>
+            <p>Best regards,</p>
+            <p>Isange pro</p>
           </div>
         `;
 
@@ -289,34 +297,41 @@ export const RIBAcceptRejectCase = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
 
 export const hospitalAcceptRejectCase = async (req, res) => {
   try {
     const caseId = req.params.id;
     const isHospitalAccepted = req.body.isHospitalAccepted;
 
-    const user = await USER.find();
-    const adminEmails = user.filter((user) => user.role === 'admin').map((admin) => admin.email);
+    // Find all admin users to notify via email
+    const admins = await USER.find({ role: 'admin' });
+    const adminEmails = admins.map((admin) => admin.email);
 
-    const updatedCase = await Case.findByIdAndUpdate(caseId, { isHospitalAccepted: isHospitalAccepted }, { new: true });
+    // Update the case with new status
+    const updatedCase = await Case.findByIdAndUpdate(caseId, { isHospitalAccepted }, { new: true })
+      .populate('assignedToHospital', 'name')
+      .exec();
 
     if (!updatedCase) {
       return res.status(404).json({ error: 'Case not found' });
     }
 
+    // Send email notifications to admins
     for (const adminEmail of adminEmails) {
       try {
-        const emailSubject = ` Case  Updates`;
+        const emailSubject = `Case Updates`;
         const emailTextContent = `A case titled "${updatedCase.caseTitle}" has been updated. Please log in to review the details.`;
         const emailHtmlContent = `
-        <div style="font-family: Arial, sans-serif; color: black;">
-          <p><strong>Dear Admin,</strong></p>
-          <p>We are pleased to inform you that a case has been updated in the system.</p>
-           <p>Case:<strong> ${updatedCase.caseTitle}</strong>, <strong> ${updatedCase.assignedToHospital}</strong> has ${isHospitalAccepted ? 'accepted' : 'rejected'} the case. </p>
-          <p>Please log in to the system to review the case and take any necessary actions.</p>
-          <p>Thank you for your attention to this matter.</p>
-          <p>Best regards,</p>
-          <p>Isange pro</p>
+          <div style="font-family: Arial, sans-serif; color: black;">
+            <p><strong>Dear Admin,</strong></p>
+            <p>We are pleased to inform you that a case has been updated in the system.</p>
+            <p>Case: <strong>${updatedCase.caseTitle}</strong>, assigned to <strong> Hospital${updatedCase.assignedToHospital.map(hospital => hospital.name).join(', ')}</strong> has ${isHospitalAccepted ? 'accepted' : 'rejected'} the case.</p>
+            <p>Please log in to the system to review the case and take any necessary actions.</p>
+            <p>Thank you for your attention to this matter.</p>
+            <p>Best regards,</p>
+            <p>Isange pro</p>
           </div>
         `;
 
@@ -333,6 +348,7 @@ export const hospitalAcceptRejectCase = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 
 
@@ -500,6 +516,23 @@ export const getbyId = async (req, res) => {
   } catch (error) {
     console.error("Error getting case by ID:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+export const getCasesByRiskLevel = async (req, res) => {
+  try {
+    const { riskLevel } = req.query;
+    const cases = await Case.find({ current_risk_level: riskLevel }).sort({ createdAt: -1 });
+    res.status(200).json({
+      message: `Cases filtered by risk level: ${riskLevel}`,
+      cases,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
   }
 };
 

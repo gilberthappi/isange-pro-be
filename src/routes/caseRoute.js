@@ -10,6 +10,7 @@ import {createCase,getbyId, getAll,updateCase,deleteCaseById, getbyUserId,
   RIBUpdateCaseProgress,
   hospitalUpdateCaseProgress,
   getCasesAssignedToRIB,
+  getCasesByRiskLevel, 
   getCasesAssignedToHospital} from "../controllers/case";
 
 const caseRouter = express.Router();
@@ -521,28 +522,66 @@ const caseRouter = express.Router();
  *         description: List of cases
  */
 
-// /**
-//  * @swagger
-//  * /Case/getCaseCounts:
-//  *   get:
-//  *     summary: Get counts of different case categories
-//  *     tags: [Admin vs case]
-//  *     security:
-//  *       - bearerAuth: []
-//  *     description: Count cases  by a specified period (e.g., "year" ).
-//  *     parameters:
-//  *       - in: query
-//  *         name: year
-//  *         schema:
-//  *           type: string
-//  *         required: true
-//  *         description: The field name to search for (e.g., "2023").
-//  *     responses:
-//  *       200:
-//  *         description: Success
-//  *       500:
-//  *         description: Internal Server Error
-//  */
+/**
+ * @swagger
+ * /Case/getCaseCounts:
+ *   get:
+ *     summary: Get counts of different case categories
+ *     tags: [Admin vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Count cases  by a specified period (e.g., "year" ).
+ *     parameters:
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The field name to search for (e.g., "2023").
+ *     responses:
+ *       200:
+ *         description: Success
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
+ * /Case/getCasesByRiskLevel:
+ *   get:
+ *     summary: Get cases filtered by risk level
+ *     tags: [Admin vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: riskLevel
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The risk level to filter cases by
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                 cases:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Case'
+ *       400:
+ *         description: Bad request - Invalid data provided
+ *       401:
+ *         description: Unauthorized - Invalid token
+ *       500:
+ *         description: Internal Server Error
+ */
 
 
   caseRouter.get('/getCaseCounts', verifyToken, isAdmin, getCaseCounts);
@@ -561,5 +600,6 @@ const caseRouter = express.Router();
   caseRouter.put("/hospitalUpdateCase/:id",verifyToken,isDoctor,hospitalUpdateCaseProgress);
   caseRouter.get("/getCasesAssignedToRIB",verifyToken,isRIB,getCasesAssignedToRIB);
   caseRouter.get("/getCasesAssignedToHospital",verifyToken,isHospital,getCasesAssignedToHospital);
+  caseRouter.get("/getCasesByRiskLevel", verifyToken, isAdmin, getCasesByRiskLevel);
 export default caseRouter;
               
