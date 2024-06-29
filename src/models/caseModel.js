@@ -35,6 +35,7 @@ const caseSchema = new mongoose.Schema({
   risk_type: String,
   current_risk_level: String,
   interventions: String,
+  isEmergency: { type: Boolean, default: false },
 });
 
 export const Case = mongoose.model("Case", caseSchema);

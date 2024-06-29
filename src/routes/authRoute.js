@@ -15,6 +15,7 @@ import {
   deleteDoctor,
   changeRole,
   getClientById,
+  getUserCounts,
 } from '../controllers/authantecation/userAuth.js';
 import { verifyToken, uploaded, isAdmin, isHospital, isRIB } from '../middleware/index.js';
 
@@ -653,5 +654,30 @@ userRouter.delete('/deleteAgent/:id', verifyToken, isRIB, deleteAgent);
  *         description: Doctor not found
  */
 userRouter.delete('/deleteDoctor/:id', verifyToken, isHospital, deleteDoctor);
+
+/**
+ * @swagger
+ * /user/getUserCounts:
+ *   get:
+ *     summary: Get counts of different user categories
+ *     tags: [Admin vs Authentications]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Count user  by a specified period (e.g., "year" ).
+ *     parameters:
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The field name to search for (e.g., "2023").
+ *     responses:
+ *       200:
+ *         description: Success
+ *       500:
+ *         description: Internal Server Error
+ */
+
+userRouter.get('/getUserCounts', verifyToken, isAdmin, getUserCounts);
 
 export default userRouter;

@@ -499,3 +499,58 @@ export const getAllDoctors = async (req, res) => {
     });
   }
 }
+
+//get count all user
+
+export const getUserCounts = async (req, res) => {
+  try {
+    const { year } = req.query;
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 11, 31);
+
+    const userCountsByMonth = await USER.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$createdAt' },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    const response = months.map((monthName, index) => {
+      const matchingMonth = userCountsByMonth.find((entry) => entry._id === index + 1);
+      return {
+        label: monthName,
+        count: matchingMonth ? matchingMonth.count : 0,
+      };
+    });
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Error getting user counts by month:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};

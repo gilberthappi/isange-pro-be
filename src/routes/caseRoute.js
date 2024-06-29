@@ -11,7 +11,10 @@ import {createCase,getbyId, getAll,updateCase,deleteCaseById, getbyUserId,
   hospitalUpdateCaseProgress,
   getCasesAssignedToRIB,
   getCasesByRiskLevel, 
-  getCasesAssignedToHospital} from "../controllers/case";
+  getCasesAssignedToHospital,
+  getEmergencyCases,
+  updateCaseToEmergency,
+} from "../controllers/case";
 
 const caseRouter = express.Router();
 
@@ -583,6 +586,55 @@ const caseRouter = express.Router();
  *         description: Internal Server Error
  */
 
+/**
+ * @swagger
+ * /Case/getEmergencyCases:
+ *   get:
+ *     summary: Get all emergency cases
+ *     tags: [Admin vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieve all cases marked as emergency
+ *     responses:
+ *       200:
+ *         description: List of emergency cases
+ */
+
+
+/**
+ * @swagger
+ * /Case/emergency/{id}:
+ *   put:
+ *     summary: A Emergency a case by ID
+ *     tags: [Admin vs case]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The case ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isEmergency:
+ *                 type: boolean
+ *                 description: set emergency 
+ *     responses:
+ *       200:
+ *         description: The case status was updated
+ *       404:
+ *         description: Case not found
+ *       500:
+ *         description: Some error occurred
+ */
+
 
   caseRouter.get('/getCaseCounts', verifyToken, isAdmin, getCaseCounts);
   caseRouter.delete('/deleteAll',verifyToken, isAdmin, deleteAll);
@@ -601,5 +653,7 @@ const caseRouter = express.Router();
   caseRouter.get("/getCasesAssignedToRIB",verifyToken,isRIB,getCasesAssignedToRIB);
   caseRouter.get("/getCasesAssignedToHospital",verifyToken,isHospital,getCasesAssignedToHospital);
   caseRouter.get("/getCasesByRiskLevel", verifyToken, isAdmin, getCasesByRiskLevel);
+  caseRouter.get("/getEmergencyCases", verifyToken, isAdmin, getEmergencyCases);
+  caseRouter.put("/emergency/:id",verifyToken,isAdmin,updateCaseToEmergency);
 export default caseRouter;
               

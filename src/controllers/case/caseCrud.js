@@ -433,7 +433,7 @@ export const hospitalUpdateCaseProgress = async (req, res) => {
 
     const loggedInUserId = req.user.id;
 
-    if (foundCase.assignedTo !== loggedInUserId) {
+    if (foundCase.assignedToHospital !== loggedInUserId) {
       return res.status(403).json({ error: "Permission denied. You are not the assigned lawyer for this case." });
     }
 
@@ -443,7 +443,7 @@ export const hospitalUpdateCaseProgress = async (req, res) => {
 
     for (const adminEmail of adminEmails) {
       try {
-        await sendEmail(adminEmail, `Case ${updatedCase.caseTitle}`, `Lawyer ${updatedCase.assignedTo} has updated the case progress.`);
+        await sendEmail(adminEmail, `Case ${updatedCase.caseTitle}`, `Hospital has updated the case progress.`);
         console.log(`Email sent to ${adminEmail}`);
       } catch (emailError) {
         console.error('Error sending email:', emailError);
@@ -623,3 +623,39 @@ export const getCasesAssignedToHospital = async (req, res) => {
   }
 };
 
+export const getEmergencyCases = async (req, res) => {
+  try {
+    const emergencyCases = await Case.find({ isEmergency: true }).sort({ createdAt: -1 });
+    res.status(200).json({
+      message: 'Emergency Cases (sorted from latest to oldest)',
+      cases: emergencyCases,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  }
+};
+
+export const updateCaseToEmergency = async (req, res) => {
+  try {
+    const caseId = req.params.id;
+    const { isEmergency } = req.body;
+
+    const updatedCase = await Case.findByIdAndUpdate(
+      caseId,
+      { isEmergency },
+      { new: true }
+    );
+
+    if (!updatedCase) {
+      return res.status(404).json({ error: 'Case not found' });
+    }
+
+    return res.status(200).json(updatedCase);
+  } catch (error) {
+    console.error('Error updating case to emergency:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
