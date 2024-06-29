@@ -4,6 +4,7 @@ import { Case, USER, Subscription } from "../../models";
 import { uploaded } from "../../middleware/photoStorage";
 import { sendEmail } from "../../utils";
 
+
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 
@@ -355,27 +356,22 @@ export const hospitalAcceptRejectCase = async (req, res) => {
 export const RIBUpdateCaseProgress = async (req, res) => {
   try {
     const caseId = req.params.id;
-    const { progress, responseText, current_risk_level, interventions } = req.body;
+    const updatedData = req.body;
     const loggedInUserId = req.userId;
 
-    // Fetch all users with role 'admin' or 'RIB'
-    const users = await User.find({ role: { $in: ['admin', 'RIB'] } });
-    const adminEmails = users.map((user) => user.email);
+    const user = await USER.findById(loggedInUserId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
     const foundCase = await Case.findById(caseId);
-
     if (!foundCase) {
       return res.status(404).json({ error: "Case not found" });
     }
-
-    // Update the case fields
-    foundCase.progress = progress;
-    foundCase.responseText = responseText;
-    foundCase.current_risk_level = current_risk_level;
-    foundCase.interventions = interventions;
     foundCase.updatedBy = loggedInUserId;
-
-    const updatedCase = await foundCase.save();
+    // Update only the fields present in updatedData
+    const updatedCase = await Case.findByIdAndUpdate(caseId, { $set: updatedData }, { new: true });
+   const adminEmails = await USER.find({ role: { $in: ['admin', 'RIB'] } }).distinct('email');
 
     // Send emails to all relevant users
     for (const adminEmail of adminEmails) {
@@ -418,8 +414,56 @@ export const RIBUpdateCaseProgress = async (req, res) => {
 
 export const hospitalUpdateCaseProgress = async (req, res) => {
   try {
+    const caseId = req.params.id;
+    const updatedData = req.body;
+    const loggedInUserId = req.userId;
 
-    } catch (error) {
+    const user = await USER.findById(loggedInUserId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const foundCase = await Case.findById(caseId);
+    if (!foundCase) {
+      return res.status(404).json({ error: "Case not found" });
+    }
+    foundCase.updatedBy = loggedInUserId;
+    // Update only the fields present in updatedData
+    const updatedCase = await Case.findByIdAndUpdate(caseId, { $set: updatedData }, { new: true });
+   const adminEmails = await USER.find({ role: { $in: ['admin', 'hospital'] } }).distinct('email');
+
+    // Send emails to all relevant users
+    for (const adminEmail of adminEmails) {
+      try {
+        const emailSubject = `Case Updated: ${updatedCase.caseTitle}`;
+        const emailTextContent = `A case titled "${updatedCase.caseTitle}" has been updated. Please log in to review the details.`;
+        const emailHtmlContent = `
+          <div style="font-family: Arial, sans-serif; color: black;">
+            <p><strong>Dear Admin,</strong></p>
+            <p>We are pleased to inform you that a case has been updated in the system. Below are the details of the case:</p>
+            <ul>
+              <li><strong>Case Title:</strong> ${updatedCase.caseTitle}</li>
+              <li><strong>Description:</strong> ${updatedCase.description}</li>
+              <li><strong>Type of Case:</strong> ${updatedCase.typeOfCase}</li>
+              <li><strong>Date of Incident:</strong> ${updatedCase.dateOfIncident || 'Not provided'}</li>
+              <li><strong>Updated By:</strong> ${loggedInUserId.name}</li>
+            </ul>
+            <p>Please log in to the system to review the case and take any necessary actions.</p>
+            <p>Thank you for your attention to this matter.</p>
+            <p>Best regards,</p>
+            <p>Isange Pro</p>
+          </div>
+        `;
+
+        await sendEmail(adminEmail, emailSubject, emailTextContent, emailHtmlContent);
+        console.log(`Email sent to ${adminEmail}`);
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+      }
+    }
+
+    res.status(200).json(updatedCase);
+  } catch (error) {
     console.error("Error updating case progress:", error);
     res.status(500).json({ error: "Internal server error" });
   }
