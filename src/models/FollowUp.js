@@ -11,6 +11,5 @@ const FollowUpSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const FollowUp = mongoose.model('FollowUp', FollowUpSchema);
+export const FollowUp =mongoose.model("FollowUp", FollowUpSchema);
 
-export default FollowUp;
