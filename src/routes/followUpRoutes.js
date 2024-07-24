@@ -64,7 +64,7 @@ const followUpRouter = express.Router();
 
 /**
  * @swagger
- * /followups:
+ * /follow:
  *   post:
  *     summary: Create a new follow-up
  *     tags: [FollowUps]
@@ -88,7 +88,7 @@ followUpRouter.post('/', uploaded,createFollowUp);
 
 /**
  * @swagger
- * /followups:
+ * /follow:
  *   get:
  *     summary: Returns the list of all follow-ups
  *     tags: [FollowUps]
@@ -108,7 +108,7 @@ followUpRouter.get('/', getFollowUps);
 
 /**
  * @swagger
- * /followups/{id}:
+ * /follow/{id}:
  *   get:
  *     summary: Get a follow-up by ID
  *     tags: [FollowUps]
@@ -135,7 +135,7 @@ followUpRouter.get('/:id', getFollowUpById);
 
 /**
  * @swagger
- * /followups/{id}:
+ * /follow/{id}:
  *   put:
  *     summary: Update a follow-up
  *     tags: [FollowUps]
@@ -168,7 +168,7 @@ followUpRouter.put('/:id',uploaded, updateFollowUp);
 
 /**
  * @swagger
- * /followups/{id}:
+ * /follow/{id}:
  *   delete:
  *     summary: Delete a follow-up
  *     tags: [FollowUps]
